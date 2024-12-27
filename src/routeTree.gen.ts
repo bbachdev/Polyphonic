@@ -16,10 +16,24 @@ import { Route as rootRoute } from './routes/__root'
 
 // Create Virtual Routes
 
+const SetupLazyImport = createFileRoute('/setup')()
+const SettingsLazyImport = createFileRoute('/settings')()
 const CollectionLazyImport = createFileRoute('/collection')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
+
+const SetupLazyRoute = SetupLazyImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/setup.lazy').then((d) => d.Route))
+
+const SettingsLazyRoute = SettingsLazyImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/settings.lazy').then((d) => d.Route))
 
 const CollectionLazyRoute = CollectionLazyImport.update({
   id: '/collection',
@@ -51,6 +65,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionLazyImport
       parentRoute: typeof rootRoute
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupLazyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -59,36 +87,46 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/collection': typeof CollectionLazyRoute
+  '/settings': typeof SettingsLazyRoute
+  '/setup': typeof SetupLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/collection': typeof CollectionLazyRoute
+  '/settings': typeof SettingsLazyRoute
+  '/setup': typeof SetupLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/collection': typeof CollectionLazyRoute
+  '/settings': typeof SettingsLazyRoute
+  '/setup': typeof SetupLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/collection'
+  fullPaths: '/' | '/collection' | '/settings' | '/setup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/collection'
-  id: '__root__' | '/' | '/collection'
+  to: '/' | '/collection' | '/settings' | '/setup'
+  id: '__root__' | '/' | '/collection' | '/settings' | '/setup'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   CollectionLazyRoute: typeof CollectionLazyRoute
+  SettingsLazyRoute: typeof SettingsLazyRoute
+  SetupLazyRoute: typeof SetupLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   CollectionLazyRoute: CollectionLazyRoute,
+  SettingsLazyRoute: SettingsLazyRoute,
+  SetupLazyRoute: SetupLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -102,7 +140,9 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/collection"
+        "/collection",
+        "/settings",
+        "/setup"
       ]
     },
     "/": {
@@ -110,6 +150,12 @@ export const routeTree = rootRoute
     },
     "/collection": {
       "filePath": "collection.lazy.tsx"
+    },
+    "/settings": {
+      "filePath": "settings.lazy.tsx"
+    },
+    "/setup": {
+      "filePath": "setup.lazy.tsx"
     }
   }
 }

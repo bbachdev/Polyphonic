@@ -1,9 +1,13 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 
 export const Route = createLazyFileRoute('/collection')({
-  component: About,
+  component: Collection,
 })
 
-function About() {
-  return <div className="p-2">Hello from About!</div>
+function Collection() {
+  return (
+    <div className="p-2">
+      Hello from About!
+    </div>
+  )
 }
