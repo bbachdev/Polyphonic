@@ -7,7 +7,7 @@ export const Route = createLazyFileRoute('/collection')({
 function Collection() {
   return (
     <div className="p-2">
-      Hello from About!
+      Hello from Collection!
     </div>
   )
 }
