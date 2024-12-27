@@ -19,7 +19,7 @@ declare module '@tanstack/react-router' {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <ThemeProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="app-theme">
       <RouterProvider router={router} />
     </ThemeProvider>
   </React.StrictMode>,

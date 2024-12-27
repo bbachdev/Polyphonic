@@ -13,7 +13,7 @@ function Setup() {
   const [step, setStep] = useState(0)
 
   return (
-    <div className={`w-full h-dvh flex flex-col items-center justify-center`}>
+    <div className={`mx-auto w-96 h-dvh flex flex-col items-center justify-center`}>
       {step === 0 && <SetupWelcome onNext={() => setStep(1)} />}
       {step === 1 && <SetupTheme onNext={() => setStep(2)} />}
       {step === 2 && <SetupCollection onNext={() => setStep(3)} onPrevious={() => setStep(1)} />}

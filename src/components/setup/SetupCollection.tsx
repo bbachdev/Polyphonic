@@ -11,8 +11,8 @@ export default function SetupCollection({ onNext, onPrevious }: SetupCollectionP
       <img src='/tauri.svg' className={`h-40 w-40`} />
       <h1 className={`mt-4 text-3xl font-bold`}>Add Your Collection</h1>
       <p className={`mt-2`}>{`Specify the place(s) where your music is located.`}</p>
-      <Button className={`mt-4`} onClick={onNext}>Next</Button>
-      <span className={`underline cursor-pointer`} onClick={onPrevious}>{`< Back`}</span>
+      <Button className={`mt-4 w-32`} onClick={onNext}>Next</Button>
+      <span className={`underline cursor-pointer mt-2`} onClick={onPrevious}>{`< Back`}</span>
     </>
   )
 }
