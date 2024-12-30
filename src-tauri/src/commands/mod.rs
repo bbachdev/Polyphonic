@@ -3,7 +3,7 @@ use crate::models::{Library, LibraryConfig};
 use crate::subsonic::ping_server;
 
 #[tauri::command]
-pub fn add_server(library: LibraryConfig) -> Result<String, String> {
+pub async fn add_server(library: LibraryConfig) -> Result<String, String> {
     //Create salt and hashed password
     let salt = generate_salt();
     let hashed_password = generate_md5(&library.password, &salt);
@@ -19,7 +19,7 @@ pub fn add_server(library: LibraryConfig) -> Result<String, String> {
         salt,
     };
 
-    match ping_server(&library) {
+    match ping_server(&library).await {
         Ok(_) => {
             //Save library hash to keyring
             match save_library_hash(&library) {
