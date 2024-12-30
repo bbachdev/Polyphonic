@@ -36,7 +36,7 @@ export default function SetupCollection({ onNext, onPrevious }: SetupCollectionP
           </Button>
         </DialogTrigger>
         <DialogContent>
-          <ServerConfigModal onClose={() => setOpen(false)} onConnectionSuccess={addLibrary} />
+          <ServerConfigModal libraries={libraries} onClose={() => setOpen(false)} onConnectionSuccess={addLibrary} />
         </DialogContent>
       </Dialog>
       <Button disabled={libraries.length === 0} className={`mt-4 w-32`} onClick={onNext}>Next</Button>

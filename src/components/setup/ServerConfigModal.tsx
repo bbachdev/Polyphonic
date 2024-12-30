@@ -19,11 +19,12 @@ const ServerConfigSchema = z.object({
 })
 
 interface ServerConfigModalProps {
+  libraries: LibraryConfig[]
   onClose: () => void
   onConnectionSuccess: (library: LibraryConfig) => void
 }
 
-export default function ServerConfigModal({ onClose, onConnectionSuccess }: ServerConfigModalProps) {
+export default function ServerConfigModal({ libraries, onClose, onConnectionSuccess }: ServerConfigModalProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<z.infer<typeof ServerConfigSchema>>({
@@ -40,8 +41,14 @@ export default function ServerConfigModal({ onClose, onConnectionSuccess }: Serv
   function onSubmit(values: z.infer<typeof ServerConfigSchema>) {
     setIsLoading(true)
 
+    //Ensure id is unique
+    if (libraries.some(l => l.id === values.name)) {
+      form.setError('name', { type: "focus", message: 'A library with this name already exists' }, { shouldFocus: true })
+      return
+    }
+
     let libraryConfig: LibraryConfig = {
-      id: values.name,
+      id: values.name.replaceAll(/\s/g, '_'),
       name: values.name,
       host: values.host,
       port: values.port,
@@ -49,8 +56,12 @@ export default function ServerConfigModal({ onClose, onConnectionSuccess }: Serv
       password: values.password,
     }
     invoke('add_server', { library: libraryConfig })
-      .then(() => {
-        onConnectionSuccess(libraryConfig)
+      .then((res) => {
+        if (res === 'Success') {
+          onConnectionSuccess(libraryConfig)
+        } else {
+          form.setError('root', { type: "connectionError" })
+        }
       }).catch((error) => {
         console.log(error)
       }).finally(() => {
@@ -61,6 +72,7 @@ export default function ServerConfigModal({ onClose, onConnectionSuccess }: Serv
   return (
     <Form {...form}>
       <form className={`dark:text-slate-50 flex flex-col gap-2`} onSubmit={form.handleSubmit(onSubmit)}>
+        {form.formState.errors.root && <p>Failed to connect to the server. Please check your connection details and try again.</p>}
         <FormField control={form.control} name="name" render={({ field }) => (
           <FormItem>
             <FormLabel>Name</FormLabel>
