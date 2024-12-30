@@ -32,12 +32,12 @@ export default function SetupAdditional({ onNext, onPrevious }: SetupAdditionalP
       <h1 className={`mt-4 text-3xl font-bold`}>Adjust Additional Settings</h1>
       <p className={`mt-2`}>{`Here are some other features you may wish to enable:`}</p>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className={`mt-4 flex flex-row gap-2`}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className={`my-8 flex flex-row gap-2`}>
           <FormField control={form.control} name="discord_rp" render={({ field }) => (
-            <FormItem className={`flex flex-row items-center`}>
+            <FormItem className={`flex flex-row items-center gap-2 space-y-0`}>
               <FormLabel>Discord Rich Presence</FormLabel>
               <FormControl>
-                <Switch checked={field.value} onChange={field.onChange} />
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )} />
