@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import Spinner from '../ui/spinner';
 import { useState } from 'react';
 import { LibraryConfig } from '@/types/Config';
+import { invoke } from '@tauri-apps/api/core';
 
 const ServerConfigSchema = z.object({
   name: z.string(),
@@ -38,8 +39,23 @@ export default function ServerConfigModal({ onClose, onConnectionSuccess }: Serv
 
   function onSubmit(values: z.infer<typeof ServerConfigSchema>) {
     setIsLoading(true)
-    console.log(values)
-    setIsLoading(false)
+
+    let libraryConfig: LibraryConfig = {
+      id: values.name,
+      name: values.name,
+      host: values.host,
+      port: values.port,
+      username: values.username,
+      password: values.password,
+    }
+    invoke('add_server', { library: libraryConfig })
+      .then(() => {
+        onConnectionSuccess(libraryConfig)
+      }).catch((error) => {
+        console.log(error)
+      }).finally(() => {
+        setIsLoading(false)
+      })
   }
 
   return (
