@@ -2,11 +2,11 @@ use crate::models::Library;
 use keyring::Entry;
 
 /* String + Library Formatting */
-pub fn create_connection_string(library: Library, endpoint: &str) -> String {
-    let mut host = library.host;
-    if let Some(port) = library.port {
-        host = format!("{}:{}", host, port)
-    }
+pub fn create_connection_string(library: &Library, endpoint: &str) -> String {
+    let host = match library.port {
+        Some(port) => format!("{}:{}", library.host, port),
+        None => library.host.clone(),
+    };
     let conn_string = format!(
         "{}/rest/{}.view?u={}&t={}&s={}&v=1.16.1&c=Polyphonic&f=json",
         host, endpoint, library.username, library.hashed_password, library.salt
@@ -29,7 +29,7 @@ pub fn generate_salt() -> String {
     hex::encode(salt)
 }
 
-pub fn get_library_hash(library: Library) -> Result<String, anyhow::Error> {
+pub fn get_library_hash(library: &Library) -> Result<String, anyhow::Error> {
     //If not found in keyring, return error
     let entry = Entry::new("Polyphonic", &library.id);
     match entry.get_password() {
@@ -38,7 +38,7 @@ pub fn get_library_hash(library: Library) -> Result<String, anyhow::Error> {
     }
 }
 
-pub fn save_library_hash(library: Library) -> Result<(), anyhow::Error> {
+pub fn save_library_hash(library: &Library) -> Result<(), anyhow::Error> {
     let entry = Entry::new("Polyphonic", &library.id);
     match entry.set_password(&library.hashed_password) {
         Ok(_) => Ok(()),
