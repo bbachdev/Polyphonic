@@ -1,4 +1,5 @@
 use crate::models::Library;
+use keyring::Entry;
 
 /* String + Library Formatting */
 pub fn create_connection_string(library: Library, endpoint: &str) -> String {
@@ -26,4 +27,21 @@ pub fn generate_salt() -> String {
     let mut rng = rand::thread_rng();
     let salt = rng.gen::<[u8; 32]>();
     hex::encode(salt)
+}
+
+pub fn get_library_hash(library: Library) -> Result<String, anyhow::Error> {
+    //If not found in keyring, return error
+    let entry = Entry::new("Polyphonic", &library.id);
+    match entry.get_password() {
+        Ok(password) => Ok(password),
+        Err(e) => Err(anyhow::anyhow!("Failed to get password: {}", e)),
+    }
+}
+
+pub fn save_library_hash(library: Library) -> Result<(), anyhow::Error> {
+    let entry = Entry::new("Polyphonic", &library.id);
+    match entry.set_password(&library.hashed_password) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(anyhow::anyhow!("Failed to set password: {}", e)),
+    }
 }
