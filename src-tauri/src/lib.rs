@@ -1,6 +1,7 @@
 mod commands;
 mod formatter;
 mod models;
+mod responses;
 mod subsonic;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
