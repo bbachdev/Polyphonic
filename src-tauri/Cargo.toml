@@ -1,7 +1,7 @@
 [package]
 name = "polyphonic"
 version = "0.1.0"
-description = "A Tauri App"
+description = "A desktop music player, built with Tauri"
 authors = ["you"]
 edition = "2021"
 
@@ -23,4 +23,10 @@ tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-store = "2"
-
+keyring = "1.1.0"
+anyhow = "1.0.57"
+md-5 = "0.10.1"
+hex = "0.4"
+rand = "0.8.5"
+reqwest = { version = "0.11.10", features = ["json", "blocking"] }
+futures = "0.3.21"

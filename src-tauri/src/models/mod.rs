@@ -16,5 +16,6 @@ pub struct Library {
     pub host: String,
     pub port: Option<u16>,
     pub username: String,
+    pub hashed_password: String,
     pub salt: String,
 }
