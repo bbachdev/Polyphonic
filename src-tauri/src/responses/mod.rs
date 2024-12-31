@@ -106,11 +106,13 @@ pub struct SubsonicAlbumID3WithSongs {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SubsonicChild {
-    id: String,
-    title: String,
-    album_id: String,
-    artist: String,
-    track: Option<u32>,
-    disc_number: Option<u32>,
-    duration: Option<u32>,
+    pub id: String,
+    pub title: String,
+    pub album_id: String,
+    pub album: String,
+    pub artist_id: String,
+    pub artist: String,
+    pub track: Option<u32>,
+    pub disc_number: Option<u32>,
+    pub duration: Option<u32>,
 }

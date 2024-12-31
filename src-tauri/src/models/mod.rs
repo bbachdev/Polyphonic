@@ -37,7 +37,7 @@ pub struct Album {
     pub artist_name: String,
     pub library_id: String,
     pub cover_art: String,
-    pub year: Option<i32>,
+    pub year: Option<u32>,
     pub duration: u32,
 }
 
@@ -50,8 +50,7 @@ pub struct Song {
     pub album_id: String,
     pub album_name: String,
     pub library_id: String,
-    pub cover_art: String,
-    pub track: Option<i32>,
+    pub track: Option<u32>,
     pub duration: Option<u32>,
     pub disc_number: Option<u32>,
 }

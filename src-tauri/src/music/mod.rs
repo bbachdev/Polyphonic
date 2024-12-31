@@ -1,6 +1,7 @@
 use crate::{
+    db::{db_connect, insert_albums, insert_artists, insert_library, insert_songs},
     formatter::create_connection_string,
-    models::Library,
+    models::{Album, Artist, Library, Song},
     responses::{SubsonicAlbumID3, SubsonicChild, SubsonicGetArtistsResponse, SubsonicResponse},
     subsonic::{get_album_art, get_albums_for_artist, get_artists, get_songs_for_album},
 };
@@ -8,19 +9,83 @@ use futures::future::join_all;
 use tauri::{AppHandle, Manager};
 
 pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(), anyhow::Error> {
-    let artists = get_artists(library).await?;
-    let albums = get_albums(artists, library).await?;
-    let songs = get_songs(&albums, library).await?;
-    get_cover_art(albums, library, app_handle).await?;
+    let artists: SubsonicResponse<SubsonicGetArtistsResponse> = get_artists(library).await?;
+    let albums: Vec<SubsonicAlbumID3> = get_albums(&artists, library).await?;
+    let songs: Vec<SubsonicChild> = get_songs(&albums, library).await?;
+    get_cover_art(&albums, library, app_handle).await?;
 
-    //TODO: Write to DB
+    let pool = db_connect(app_handle).await?;
+    match insert_library(&pool, library).await {
+        Ok(_) => println!("Library inserted"),
+        Err(e) => println!("Error: {}", e),
+    }
+
+    //Transform data (perhaps not necessary for Subsonic-only, but for comaptibility with other future sources)
+    let mut transformed_artists: Vec<Artist> = vec![];
+    let mut transformed_albums: Vec<Album> = vec![];
+    let mut transformed_songs: Vec<Song> = vec![];
+
+    for artist in &artists.data.artists.index {
+        for artist_detail in &artist.artist {
+            let artist = Artist {
+                id: artist_detail.id.clone(),
+                name: artist_detail.name.clone(),
+                library_id: library.id.clone(),
+            };
+            transformed_artists.push(artist);
+        }
+    }
+
+    for album in &albums {
+        let album = Album {
+            id: album.id.clone(),
+            name: album.name.clone(),
+            artist_id: album.artist.clone(),
+            artist_name: album.artist.clone(),
+            library_id: library.id.clone(),
+            cover_art: album.cover_art.clone(),
+            year: album.year,
+            duration: album.duration,
+        };
+        transformed_albums.push(album);
+    }
+
+    for song in &songs {
+        let song = Song {
+            id: song.id.clone(),
+            title: song.title.clone(),
+            artist_id: song.artist_id.clone(),
+            artist_name: song.artist.clone(),
+            album_id: song.album_id.clone(),
+            album_name: song.album.clone(),
+            library_id: library.id.clone(),
+            track: song.track,
+            duration: song.duration,
+            disc_number: song.disc_number,
+        };
+        transformed_songs.push(song);
+    }
+
+    //Write to DB
+    match insert_artists(&pool, &transformed_artists).await {
+        Ok(_) => println!("Artists inserted"),
+        Err(e) => println!("Error: {}", e),
+    }
+    match insert_albums(&pool, &transformed_albums).await {
+        Ok(_) => println!("Albums inserted"),
+        Err(e) => println!("Error: {}", e),
+    }
+    match insert_songs(&pool, &transformed_songs).await {
+        Ok(_) => println!("Songs inserted"),
+        Err(e) => println!("Error: {}", e),
+    }
 
     Ok(())
 }
 
 /* Retrieve each album per artist */
 pub async fn get_albums(
-    artists: SubsonicResponse<SubsonicGetArtistsResponse>,
+    artists: &SubsonicResponse<SubsonicGetArtistsResponse>,
     library: &Library,
 ) -> Result<Vec<SubsonicAlbumID3>, anyhow::Error> {
     let mut albums: Vec<SubsonicAlbumID3> = vec![];
@@ -80,7 +145,7 @@ pub async fn get_songs(
 
 /* Sync album art */
 async fn get_cover_art(
-    albums: Vec<SubsonicAlbumID3>,
+    albums: &Vec<SubsonicAlbumID3>,
     library: &Library,
     app_handle: &AppHandle,
 ) -> Result<(), anyhow::Error> {
@@ -95,7 +160,7 @@ async fn get_cover_art(
         let url = format!("{}&id={}", base_url, &album.cover_art);
         futures.push(get_album_art(
             url,
-            album.cover_art,
+            album.cover_art.clone(),
             client.clone(),
             &data_dir_string,
         ));

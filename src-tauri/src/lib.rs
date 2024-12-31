@@ -16,7 +16,7 @@ pub fn run() {
       sql: "CREATE TABLE IF NOT EXISTS libraries (id TEXT PRIMARY KEY, name TEXT, path TEXT, host TEXT, port INTEGER, username TEXT, hashed_password TEXT, salt TEXT);
       CREATE TABLE IF NOT EXISTS artists (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT);
       CREATE TABLE IF NOT EXISTS albums (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT, artist_id TEXT REFERENCES artists(id), cover_art TEXT, year INTEGER, duration INTEGER);
-      CREATE TABLE IF NOT EXISTS songs (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), title TEXT, artist_id TEXT, artist_name TEXT, album_id TEXT, album_name TEXT, cover_art TEXT, track INTEGER, year INTEGER, duration INTEGER, path TEXT, artists TEXT);",
+      CREATE TABLE IF NOT EXISTS songs (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), title TEXT, artist_id TEXT, artist_name TEXT, album_id TEXT, album_name TEXT, track INTEGER, year INTEGER, duration INTEGER);",
       kind: MigrationKind::Up,
     }];
 
@@ -29,7 +29,10 @@ pub fn run() {
                 .add_migrations("sqlite:music.db", migrations)
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![commands::add_server])
+        .invoke_handler(tauri::generate_handler![
+            commands::add_server,
+            commands::sync_collection
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

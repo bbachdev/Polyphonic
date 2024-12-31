@@ -12,31 +12,26 @@ pub async fn db_connect(app_handle: &AppHandle) -> Result<Pool<Sqlite>, anyhow::
     Ok(pool)
 }
 
-pub async fn insert_libraries(
-    pool: &Pool<Sqlite>,
-    libraries: &Vec<Library>,
-) -> Result<(), anyhow::Error> {
+pub async fn insert_library(pool: &Pool<Sqlite>, library: &Library) -> Result<(), anyhow::Error> {
     //TODO: Check if there's a more efficient way to do this
-    for library in libraries {
-        let library_id = &library.id;
-        let library_name = &library.name;
-        let library_host = &library.host;
-        let library_port = library.port.unwrap_or(-1);
-        let library_username = &library.username;
-        let library_salt = &library.salt;
+    let library_id = &library.id;
+    let library_name = &library.name;
+    let library_host = &library.host;
+    let library_port = library.port.unwrap_or(-1);
+    let library_username = &library.username;
+    let library_salt = &library.salt;
 
-        sqlx::query(
-      "INSERT INTO libraries (id, name, host, port, username, salt) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        )
-        .bind(library_id)
-        .bind(library_name)
-        .bind(library_host)
-        .bind(library_port)
-        .bind(library_username)
-        .bind(library_salt)
-        .execute(pool)
-        .await?;
-    }
+    sqlx::query(
+        "INSERT INTO libraries (id, name, host, port, username, salt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    )
+    .bind(library_id)
+    .bind(library_name)
+    .bind(library_host)
+    .bind(library_port)
+    .bind(library_username)
+    .bind(library_salt)
+    .execute(pool)
+    .await?;
     Ok(())
 }
 
@@ -69,7 +64,7 @@ pub async fn insert_albums(pool: &Pool<Sqlite>, albums: &Vec<Album>) -> Result<(
         let album_artist_name = &album.artist_name;
         let album_library_id = &album.library_id;
         let album_cover_art = &album.cover_art;
-        let album_year = album.year.unwrap_or(-1);
+        let album_year = album.year.unwrap_or(9999);
         let album_duration = album.duration;
 
         sqlx::query(
@@ -99,12 +94,11 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         let song_album_id = &song.album_id;
         let song_album_name = &song.album_name;
         let song_library_id = &song.library_id;
-        let song_cover_art = &song.cover_art;
-        let song_track = song.track.unwrap_or(-1);
+        let song_track = song.track.unwrap_or(0);
         let song_duration = song.duration.unwrap_or(0);
 
         sqlx::query(
-            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, cover_art, track, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(song_id)
         .bind(song_title)
@@ -113,7 +107,6 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         .bind(song_album_id)
         .bind(song_album_name)
         .bind(song_library_id)
-        .bind(song_cover_art)
         .bind(song_track)
         .bind(song_duration)
         .execute(pool)

@@ -1,5 +1,8 @@
+use tauri::AppHandle;
+
 use crate::formatter::{generate_md5, generate_salt, save_library_hash};
 use crate::models::{Library, LibraryConfig};
+use crate::music::sync_library;
 use crate::subsonic::ping_server;
 
 #[tauri::command]
@@ -32,6 +35,15 @@ pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
 }
 
 #[tauri::command]
-pub async fn sync_collection() -> Result<String, String> {
-    Ok("Success".to_string())
+pub async fn sync_collection(
+    libraries: Vec<Library>,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    for library in libraries {
+        match sync_library(&library, &app_handle).await {
+            Ok(_) => println!("Library synced"),
+            Err(e) => println!("Error: {}", e),
+        }
+    }
+    Ok("Collection synced".to_string())
 }
