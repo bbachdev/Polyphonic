@@ -1,6 +1,7 @@
 mod commands;
 mod formatter;
 mod models;
+mod music;
 mod responses;
 mod subsonic;
 
