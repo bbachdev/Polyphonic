@@ -1,3 +1,9 @@
+export interface Config {
+  theme: string;
+  libraries: Library[]
+  discord_rp: boolean;
+}
+
 export interface LibraryConfig {
   id: string;
   name: string;

@@ -4,9 +4,11 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Config } from '@/types/Config';
 
 interface SetupAdditionalProps {
-  onNext: () => void,
+  setConfigAdditional: (additional: Partial<Config>) => void,
+  onFinish: () => void,
   onPrevious: () => void
 }
 
@@ -14,7 +16,7 @@ const AdditionalSettingsSchema = z.object({
   discord_rp: z.boolean().default(false).optional(),
 })
 
-export default function SetupAdditional({ onNext, onPrevious }: SetupAdditionalProps) {
+export default function SetupAdditional({ setConfigAdditional, onFinish, onPrevious }: SetupAdditionalProps) {
   const form = useForm<z.infer<typeof AdditionalSettingsSchema>>({
     resolver: zodResolver(AdditionalSettingsSchema),
     defaultValues: {
@@ -23,7 +25,8 @@ export default function SetupAdditional({ onNext, onPrevious }: SetupAdditionalP
   })
 
   function onSubmit(data: z.infer<typeof AdditionalSettingsSchema>) {
-    console.log(data)
+    setConfigAdditional({ discord_rp: data.discord_rp })
+    onFinish()
   }
 
   return (
@@ -43,7 +46,7 @@ export default function SetupAdditional({ onNext, onPrevious }: SetupAdditionalP
           )} />
         </form>
       </Form>
-      <Button className={`mt-4 w-32`} onClick={onNext}>Finish</Button>
+      <Button className={`mt-4 w-32`} type='submit'>Finish</Button>
       <span className={`underline cursor-pointer mt-2`} onClick={onPrevious}>{`< Back`}</span>
     </>
   )

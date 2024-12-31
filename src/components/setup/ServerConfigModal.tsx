@@ -7,7 +7,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Spinner from '../ui/spinner';
 import { useState } from 'react';
-import { LibraryConfig } from '@/types/Config';
+import { LibraryConfig, Library } from '@/types/Config';
 import { invoke } from '@tauri-apps/api/core';
 
 const ServerConfigSchema = z.object({
@@ -19,9 +19,9 @@ const ServerConfigSchema = z.object({
 })
 
 interface ServerConfigModalProps {
-  libraries: LibraryConfig[]
+  libraries: Library[]
   onClose: () => void
-  onConnectionSuccess: (library: LibraryConfig) => void
+  onConnectionSuccess: (library: Library) => void
 }
 
 export default function ServerConfigModal({ libraries, onClose, onConnectionSuccess }: ServerConfigModalProps) {
@@ -57,13 +57,10 @@ export default function ServerConfigModal({ libraries, onClose, onConnectionSucc
     }
     invoke('add_server', { library: libraryConfig })
       .then((res) => {
-        if (res === 'Success') {
-          onConnectionSuccess(libraryConfig)
-        } else {
-          form.setError('root', { type: "connectionError" })
-        }
-      }).catch((error) => {
-        console.log(error)
+        let newLibrary: Library = res as Library
+        onConnectionSuccess(newLibrary)
+      }).catch(() => {
+        form.setError('root', { type: "connectionError" })
       }).finally(() => {
         setIsLoading(false)
       })

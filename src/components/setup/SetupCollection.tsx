@@ -3,21 +3,27 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { FaCloud } from "react-icons/fa";
 import ServerConfigModal from '@/components/setup/ServerConfigModal';
 import { useState } from 'react';
-import { LibraryConfig } from '@/types/Config';
+import { Library } from '@/types/Config';
 
 interface SetupCollectionProps {
+  configLibraries: Library[] | undefined,
+  setConfigLibraries: (libraries: Library[]) => void,
   onNext: () => void,
   onPrevious: () => void
 }
 
-export default function SetupCollection({ onNext, onPrevious }: SetupCollectionProps) {
+export default function SetupCollection({ configLibraries, setConfigLibraries, onNext, onPrevious }: SetupCollectionProps) {
   const [open, setOpen] = useState(false)
-  const [libraries, setLibraries] = useState<LibraryConfig[]>([])
+  const [libraries, setLibraries] = useState<Library[]>(configLibraries || [])
 
-  function addLibrary(library: LibraryConfig) {
-    console.log("Add library", library)
+  function addLibrary(library: Library) {
     setLibraries([...libraries, library])
     setOpen(false)
+  }
+
+  function nextClicked() {
+    setConfigLibraries(libraries)
+    onNext()
   }
 
   return (
@@ -39,7 +45,7 @@ export default function SetupCollection({ onNext, onPrevious }: SetupCollectionP
           <ServerConfigModal libraries={libraries} onClose={() => setOpen(false)} onConnectionSuccess={addLibrary} />
         </DialogContent>
       </Dialog>
-      <Button disabled={libraries.length === 0} className={`mt-4 w-32`} onClick={onNext}>Next</Button>
+      <Button disabled={libraries.length === 0} className={`mt-4 w-32`} onClick={nextClicked}>Next</Button>
       <span className={`underline cursor-pointer mt-2`} onClick={onPrevious}>{`< Back`}</span>
     </>
   )

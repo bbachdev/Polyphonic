@@ -10,6 +10,7 @@ pub struct LibraryConfig {
     pub password: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Library {
     pub id: String,
     pub name: String,

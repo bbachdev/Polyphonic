@@ -3,11 +3,17 @@ import { Button } from '../ui/button';
 import { FaSun, FaMoon, FaCheck } from "react-icons/fa";
 
 interface SetupThemeProps {
+  setConfigTheme: (theme: string) => void
   onNext: () => void
 }
 
-export default function SetupTheme({ onNext }: SetupThemeProps) {
+export default function SetupTheme({ onNext, setConfigTheme }: SetupThemeProps) {
   const { theme, setTheme } = useTheme()
+
+  function nextClicked() {
+    setConfigTheme(theme)
+    onNext()
+  }
 
   return (
     <>
@@ -24,7 +30,7 @@ export default function SetupTheme({ onNext }: SetupThemeProps) {
           <span>Dark</span>
         </Button>
       </div>
-      <Button className={`mt-4 w-32`} onClick={onNext}>Next</Button>
+      <Button className={`mt-4 w-32`} onClick={nextClicked}>Next</Button>
     </>
   )
 }
