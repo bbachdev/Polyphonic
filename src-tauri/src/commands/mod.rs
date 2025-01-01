@@ -12,7 +12,7 @@ pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
     let hashed_password = generate_md5(&library.password, &salt);
 
     //Create regular library struct
-    let library = Library {
+    let mut library = Library {
         id: library.id,
         name: library.name,
         host: library.host,
@@ -26,7 +26,10 @@ pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
         Ok(_) => {
             //Save library hash to keyring
             match save_library_hash(&library) {
-                Ok(_) => Ok(library),
+                Ok(_) => {
+                    library.hashed_password = "".to_string();
+                    Ok(library)
+                }
                 Err(_) => Err("=ERROR: Failed to save library hash".to_string()),
             }
         }
