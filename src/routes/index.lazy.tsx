@@ -17,7 +17,8 @@ function Startup() {
       if (configKeys.length > 0) {
         navigate({ to: '/collection' })
       } else {
-        navigate({ to: '/setup' })
+        // navigate({ to: '/setup' })
+        navigate({ to: '/initialsync' })
       }
     }
 

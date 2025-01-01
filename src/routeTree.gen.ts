@@ -18,6 +18,7 @@ import { Route as rootRoute } from './routes/__root'
 
 const SetupLazyImport = createFileRoute('/setup')()
 const SettingsLazyImport = createFileRoute('/settings')()
+const InitialsyncLazyImport = createFileRoute('/initialsync')()
 const CollectionLazyImport = createFileRoute('/collection')()
 const IndexLazyImport = createFileRoute('/')()
 
@@ -34,6 +35,12 @@ const SettingsLazyRoute = SettingsLazyImport.update({
   path: '/settings',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/settings.lazy').then((d) => d.Route))
+
+const InitialsyncLazyRoute = InitialsyncLazyImport.update({
+  id: '/initialsync',
+  path: '/initialsync',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/initialsync.lazy').then((d) => d.Route))
 
 const CollectionLazyRoute = CollectionLazyImport.update({
   id: '/collection',
@@ -65,6 +72,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionLazyImport
       parentRoute: typeof rootRoute
     }
+    '/initialsync': {
+      id: '/initialsync'
+      path: '/initialsync'
+      fullPath: '/initialsync'
+      preLoaderRoute: typeof InitialsyncLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -87,6 +101,7 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/collection': typeof CollectionLazyRoute
+  '/initialsync': typeof InitialsyncLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/setup': typeof SetupLazyRoute
 }
@@ -94,6 +109,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/collection': typeof CollectionLazyRoute
+  '/initialsync': typeof InitialsyncLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/setup': typeof SetupLazyRoute
 }
@@ -102,22 +118,24 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/collection': typeof CollectionLazyRoute
+  '/initialsync': typeof InitialsyncLazyRoute
   '/settings': typeof SettingsLazyRoute
   '/setup': typeof SetupLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/collection' | '/settings' | '/setup'
+  fullPaths: '/' | '/collection' | '/initialsync' | '/settings' | '/setup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/collection' | '/settings' | '/setup'
-  id: '__root__' | '/' | '/collection' | '/settings' | '/setup'
+  to: '/' | '/collection' | '/initialsync' | '/settings' | '/setup'
+  id: '__root__' | '/' | '/collection' | '/initialsync' | '/settings' | '/setup'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   CollectionLazyRoute: typeof CollectionLazyRoute
+  InitialsyncLazyRoute: typeof InitialsyncLazyRoute
   SettingsLazyRoute: typeof SettingsLazyRoute
   SetupLazyRoute: typeof SetupLazyRoute
 }
@@ -125,6 +143,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   CollectionLazyRoute: CollectionLazyRoute,
+  InitialsyncLazyRoute: InitialsyncLazyRoute,
   SettingsLazyRoute: SettingsLazyRoute,
   SetupLazyRoute: SetupLazyRoute,
 }
@@ -141,6 +160,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/collection",
+        "/initialsync",
         "/settings",
         "/setup"
       ]
@@ -150,6 +170,9 @@ export const routeTree = rootRoute
     },
     "/collection": {
       "filePath": "collection.lazy.tsx"
+    },
+    "/initialsync": {
+      "filePath": "initialsync.lazy.tsx"
     },
     "/settings": {
       "filePath": "settings.lazy.tsx"

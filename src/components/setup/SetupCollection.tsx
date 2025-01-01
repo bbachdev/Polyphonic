@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { FaCloud } from "react-icons/fa";
+import { FaCloud, FaTrash } from "react-icons/fa";
 import ServerConfigModal from '@/components/setup/ServerConfigModal';
 import { useState } from 'react';
 import { Library } from '@/types/Config';
@@ -21,6 +21,10 @@ export default function SetupCollection({ configLibraries, setConfigLibraries, o
     setOpen(false)
   }
 
+  function removeLibrary(library: Library) {
+    setLibraries(libraries.filter(l => l.id !== library.id))
+  }
+
   function nextClicked() {
     setConfigLibraries(libraries)
     onNext()
@@ -30,7 +34,26 @@ export default function SetupCollection({ configLibraries, setConfigLibraries, o
     <>
       <img src='/tauri.svg' className={`h-40 w-40`} />
       <h1 className={`mt-4 text-3xl font-bold`}>Add Your Collection</h1>
-      <p className={`mt-2`}>{`Specify the place(s) where your music is located.`}</p>
+      <p className={`mt-2 mb-4`}>{`Specify the place(s) where your music is located.`}</p>
+      {libraries.length > 0 && (
+        <>
+          <p>Selected Libraries:</p>
+          <div className={`mt-2 w-5/6 flex flex-col dark:even:bg-slate-800 dark:odd:bg-slate-900`}>
+            {libraries.map((library, index) => (
+              <div key={index} className={`w-full px-2 py-3 flex flex-row`}>
+                <div className={`flex flex-row items-center gap-3`}>
+                  <FaCloud className={`h-6 w-6`} />
+                  <span>{library.name}</span>
+                </div>
+                <button className={`ml-auto`} onClick={() => removeLibrary(library)}>
+                  <FaTrash className={`h-6 w-6`} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button variant={'outline'} className={`flex flex-row mt-4 h-20 text-left`}>

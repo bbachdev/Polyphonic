@@ -57,11 +57,12 @@ export default function ServerConfigModal({ libraries, onClose, onConnectionSucc
     }
     invoke('add_server', { library: libraryConfig })
       .then((res) => {
+        console.log(res)
         let newLibrary: Library = res as Library
         onConnectionSuccess(newLibrary)
+        setIsLoading(false)
       }).catch(() => {
         form.setError('root', { type: "connectionError" })
-      }).finally(() => {
         setIsLoading(false)
       })
   }
@@ -69,7 +70,7 @@ export default function ServerConfigModal({ libraries, onClose, onConnectionSucc
   return (
     <Form {...form}>
       <form className={`dark:text-slate-50 flex flex-col gap-2`} onSubmit={form.handleSubmit(onSubmit)}>
-        {form.formState.errors.root && <p>Failed to connect to the server. Please check your connection details and try again.</p>}
+        {form.formState.errors.root && <p className={`text-red-500`}>Failed to connect to the server. Please check your connection details and try again.</p>}
         <FormField control={form.control} name="name" render={({ field }) => (
           <FormItem>
             <FormLabel>Name</FormLabel>
@@ -119,7 +120,7 @@ export default function ServerConfigModal({ libraries, onClose, onConnectionSucc
           <FormItem className={`mt-2`}>
             <FormLabel>Password</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input type='password' {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -133,7 +134,7 @@ export default function ServerConfigModal({ libraries, onClose, onConnectionSucc
           )}
 
           <div className={`ml-auto flex flex-row`}>
-            <Button variant={'outline'} className={`mr-2`} onClick={onClose}>Cancel</Button>
+            <Button disabled={isLoading} variant={'outline'} className={`mr-2`} onClick={onClose}>Cancel</Button>
             <Button className={`ml-auto`} type="submit">Confirm</Button>
           </div>
         </DialogFooter>

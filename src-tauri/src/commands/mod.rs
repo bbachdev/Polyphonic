@@ -1,6 +1,6 @@
 use tauri::AppHandle;
 
-use crate::formatter::{generate_md5, generate_salt, save_library_hash};
+use crate::formatter::{generate_md5, generate_salt, get_library_hash, save_library_hash};
 use crate::models::{Library, LibraryConfig};
 use crate::music::sync_library;
 use crate::subsonic::ping_server;
@@ -39,10 +39,18 @@ pub async fn sync_collection(
     libraries: Vec<Library>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
-    for library in libraries {
-        match sync_library(&library, &app_handle).await {
-            Ok(_) => println!("Library synced"),
-            Err(e) => println!("Error: {}", e),
+    for mut library in libraries {
+        //Get hashed password from keyring
+        match get_library_hash(&library) {
+            Ok(hashed_password) => {
+                library.hashed_password = hashed_password;
+                //Sync library
+                match sync_library(&library, &app_handle).await {
+                    Ok(_) => println!("Library synced"),
+                    Err(e) => println!("Error: {}", e),
+                }
+            }
+            Err(_) => println!("Error: Failed to get hashed password"),
         }
     }
     Ok("Collection synced".to_string())

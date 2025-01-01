@@ -7,8 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/
 import { Config } from '@/types/Config';
 
 interface SetupAdditionalProps {
-  setConfigAdditional: (additional: Partial<Config>) => void,
-  onFinish: () => void,
+  onFinish: (additional: Partial<Config>) => void,
   onPrevious: () => void
 }
 
@@ -16,7 +15,7 @@ const AdditionalSettingsSchema = z.object({
   discord_rp: z.boolean().default(false).optional(),
 })
 
-export default function SetupAdditional({ setConfigAdditional, onFinish, onPrevious }: SetupAdditionalProps) {
+export default function SetupAdditional({ onFinish, onPrevious }: SetupAdditionalProps) {
   const form = useForm<z.infer<typeof AdditionalSettingsSchema>>({
     resolver: zodResolver(AdditionalSettingsSchema),
     defaultValues: {
@@ -25,8 +24,8 @@ export default function SetupAdditional({ setConfigAdditional, onFinish, onPrevi
   })
 
   function onSubmit(data: z.infer<typeof AdditionalSettingsSchema>) {
-    setConfigAdditional({ discord_rp: data.discord_rp })
-    onFinish()
+    console.log("onSubmit", data)
+    onFinish({ discord_rp: data.discord_rp })
   }
 
   return (
@@ -35,7 +34,7 @@ export default function SetupAdditional({ setConfigAdditional, onFinish, onPrevi
       <h1 className={`mt-4 text-3xl font-bold`}>Adjust Additional Settings</h1>
       <p className={`mt-2`}>{`Here are some other features you may wish to enable:`}</p>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className={`my-8 flex flex-row gap-2`}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className={`mt-8 flex flex-col gap-2 items-center`}>
           <FormField control={form.control} name="discord_rp" render={({ field }) => (
             <FormItem className={`flex flex-row items-center gap-2 space-y-0`}>
               <FormLabel>Discord Rich Presence</FormLabel>
@@ -44,9 +43,9 @@ export default function SetupAdditional({ setConfigAdditional, onFinish, onPrevi
               </FormControl>
             </FormItem>
           )} />
+          <Button className={`mt-6 w-32`} type='submit'>Finish</Button>
         </form>
       </Form>
-      <Button className={`mt-4 w-32`} type='submit'>Finish</Button>
       <span className={`underline cursor-pointer mt-2`} onClick={onPrevious}>{`< Back`}</span>
     </>
   )

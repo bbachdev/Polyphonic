@@ -16,7 +16,16 @@ pub async fn ping_server(library: &Library) -> Result<(), anyhow::Error> {
     let url = create_connection_string(library, "ping");
     match reqwest::get(&url).await {
         Ok(res) => match res.json::<SubsonicResponse<SubsonicBaseResponse>>().await {
-            Ok(_) => Ok(()),
+            Ok(sub_response) => {
+                if sub_response.data.status == "ok" {
+                    Ok(())
+                } else {
+                    Err(anyhow::anyhow!(
+                        "Failed to ping server: {}",
+                        sub_response.data.error.unwrap().message
+                    ))
+                }
+            }
             Err(e) => Err(anyhow::anyhow!("Failed to parse response: {}", e)),
         },
         Err(e) => Err(anyhow::anyhow!("Failed to ping server: {}", e)),
