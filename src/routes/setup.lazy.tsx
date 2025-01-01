@@ -23,7 +23,7 @@ function Setup() {
     const store = await load('config.json', { autoSave: false });
     await store.set('theme', { value: config.theme });
     await store.set('libraries', { value: config.libraries });
-    await store.set('discord_rp', { value: config.discord_rp });
+    await store.set('discord_rp', { value: additional.discord_rp });
     await store.save();
     navigate({ to: '/initialsync' })
   }
