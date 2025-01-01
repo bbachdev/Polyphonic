@@ -12,6 +12,16 @@ pub struct LibraryConfig {
 }
 
 #[derive(Serialize, Deserialize, Debug, FromRow)]
+pub struct DBLibrary {
+    pub id: String,
+    pub name: String,
+    pub host: String,
+    pub port: Option<i16>,
+    pub username: String,
+    pub salt: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Library {
     pub id: String,
     pub name: String,
@@ -53,4 +63,6 @@ pub struct Song {
     pub track: Option<u32>,
     pub duration: Option<u32>,
     pub disc_number: Option<u32>,
+    pub content_type: String,
+    pub cover_art: String,
 }

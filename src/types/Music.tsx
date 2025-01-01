@@ -20,10 +20,13 @@ type Song = {
   artist_name: string;
   album_id: string;
   album_name: string;
+  library_id: string;
   track: number;
   duration: number;
   discNumber: number;
   path: string;
+  content_type: string;
+  cover_art: string;
 }
 
 export type { Artist, Album, Song }

@@ -19,5 +19,6 @@ export interface Library {
   host: string;
   port?: number;
   username: string;
+  hashed_password?: string;
   salt: string;
 }

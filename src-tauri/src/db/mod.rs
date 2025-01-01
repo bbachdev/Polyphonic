@@ -1,7 +1,10 @@
 use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Manager};
 
-use crate::models::{Album, Artist, Library, Song};
+use crate::{
+    formatter::get_library_hash,
+    models::{Album, Artist, DBLibrary, Library, Song},
+};
 
 pub async fn db_connect(app_handle: &AppHandle) -> Result<Pool<Sqlite>, anyhow::Error> {
     let binding = app_handle.path().app_config_dir().unwrap();
@@ -96,9 +99,11 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         let song_library_id = &song.library_id;
         let song_track = song.track.unwrap_or(0);
         let song_duration = song.duration.unwrap_or(0);
+        let song_content_type = &song.content_type;
+        let song_cover_art = &song.cover_art;
 
         sqlx::query(
-            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, duration, content_type, cover_art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(song_id)
         .bind(song_title)
@@ -109,8 +114,40 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         .bind(song_library_id)
         .bind(song_track)
         .bind(song_duration)
+        .bind(song_content_type)
+        .bind(song_cover_art)
         .execute(pool)
         .await?;
     }
     Ok(())
+}
+
+pub async fn get_libraries(app_handle: &AppHandle) -> Result<Vec<Library>, anyhow::Error> {
+    let mut libraries_with_hash: Vec<Library> = Vec::new();
+    let db = db_connect(app_handle).await?;
+    let libraries = sqlx::query_as::<_, DBLibrary>(
+        "SELECT id, name, host, port, username, salt FROM libraries ORDER BY id COLLATE NOCASE ASC",
+    )
+    .fetch_all(&db)
+    .await?;
+
+    for library in libraries {
+        let mut real_library = Library {
+            id: library.id,
+            name: library.name,
+            host: library.host,
+            port: library.port,
+            username: library.username,
+            hashed_password: "".to_string(),
+            salt: library.salt,
+        };
+        match get_library_hash(&real_library) {
+            Ok(hashed_password) => {
+                real_library.hashed_password = hashed_password;
+            }
+            Err(_) => println!("Error: Failed to get hashed password"),
+        }
+        libraries_with_hash.push(real_library);
+    }
+    Ok(libraries_with_hash)
 }

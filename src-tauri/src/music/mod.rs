@@ -70,6 +70,8 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
             track: song.track,
             duration: song.duration,
             disc_number: song.disc_number,
+            content_type: song.content_type.clone(),
+            cover_art: song.cover_art.clone().unwrap_or("".to_string()),
         };
         transformed_songs.push(song);
     }
@@ -142,8 +144,11 @@ pub async fn get_songs(
     for album_call in album_calls {
         match album_call {
             Ok(album_response) => {
+                let cover_art_clone = album_response.data.album.cover_art.clone();
                 for song in &album_response.data.album.song {
-                    songs.push(song.clone());
+                    let mut song_clone = song.clone();
+                    song_clone.cover_art = Some(cover_art_clone.clone());
+                    songs.push(song_clone);
                 }
             }
             Err(e) => {

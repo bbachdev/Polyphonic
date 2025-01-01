@@ -1,11 +1,13 @@
 import AlbumList from '@/components/collection/AlbumList';
 import ArtistList from '@/components/collection/ArtistList';
+import NowPlaying from '@/components/collection/NowPlaying';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { Config } from '@/types/Config';
+import { Config, Library } from '@/types/Config';
 import { Album, Song } from '@/types/Music';
 import { getAlbumsForArtist, getSongsForAlbum } from '@/util/db';
 import { createLazyFileRoute } from '@tanstack/react-router'
+import { invoke } from '@tauri-apps/api/core';
 import { load } from '@tauri-apps/plugin-store';
 import { useEffect, useState } from 'react';
 import { FaGear } from "react-icons/fa6";
@@ -15,8 +17,10 @@ export const Route = createLazyFileRoute('/collection')({
 })
 
 function Collection() {
+  const [libraries, setLibraries] = useState<Map<String, Library>>(new Map())
   const [albumList, setAlbumList] = useState<Album[]>([])
   const [songList, setSongList] = useState<Song[]>([])
+  const [nowPlaying, setNowPlaying] = useState<Song | undefined>(undefined)
 
   async function getArtistAlbums(artistId: string | undefined) {
     console.log("Selected artist", artistId)
@@ -40,8 +44,25 @@ function Collection() {
   }
 
   async function playSong(songId: string) {
-    console.log("Play song", songId)
+    setNowPlaying(songList.find(s => s.id === songId))
   }
+
+  useEffect(() => {
+    async function getLibraries() {
+      invoke('get_libraries')
+        .then((libraries: any) => {
+          const library_data: Library[] = libraries as Library[]
+          const libraryMap = new Map<String, Library>()
+          library_data.forEach(library => {
+            libraryMap.set(library.id, library)
+          })
+          setLibraries(libraryMap)
+        }).catch(() => {
+          console.log("Failed to get libraries")
+        })
+    }
+    getLibraries()
+  }, [])
 
   return (
     <div className={`w-full flex flex-col`}>
@@ -58,14 +79,15 @@ function Collection() {
           <ArtistList onArtistSelected={getArtistAlbums} />
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
-        <ResizablePanel defaultSize={60} minSize={30}>
+        <ResizablePanel defaultSize={50} minSize={30}>
           <AlbumList albums={albumList} onAlbumSelected={getAlbumSongs} />
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
-        <ResizablePanel defaultSize={20} minSize={20}>
+        <ResizablePanel defaultSize={30} minSize={20}>
           <SongList songs={songList} onSongPlay={playSong} />
         </ResizablePanel>
       </ResizablePanelGroup>
+      <NowPlaying nowPlaying={nowPlaying} libraries={libraries} />
     </div>
   )
 }

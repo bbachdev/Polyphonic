@@ -115,4 +115,6 @@ pub struct SubsonicChild {
     pub track: Option<u32>,
     pub disc_number: Option<u32>,
     pub duration: Option<u32>,
+    pub content_type: String,
+    pub cover_art: Option<String>,
 }

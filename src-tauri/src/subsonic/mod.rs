@@ -101,7 +101,7 @@ pub async fn get_album_art(
         Ok(res) => match res.bytes().await {
             Ok(buf) => {
                 //Save file
-                let mut file = File::create(format!("{}/cover_art/{}.jpg", path, cover_id))?;
+                let mut file = File::create(format!("{}/cover_art/{}", path, cover_id))?;
                 match file.write_all(&buf) {
                     Ok(_) => Ok(()),
                     Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
@@ -110,5 +110,20 @@ pub async fn get_album_art(
             Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
         },
         Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
+    }
+}
+
+/* stream
+* https://opensubsonic.netlify.app/docs/endpoints/stream */
+pub async fn stream(library: &Library, song_id: &str) -> Result<Vec<u8>, anyhow::Error> {
+    let base_url = create_connection_string(library, "stream");
+    let url = format!("{}&id={}", base_url, song_id);
+
+    match reqwest::get(&url).await {
+        Ok(res) => match res.bytes().await {
+            Ok(buf) => Ok(buf.to_vec()),
+            Err(e) => Err(anyhow::anyhow!("Stream Error: {}", e)),
+        },
+        Err(e) => Err(anyhow::anyhow!("Stream Error: {}", e)),
     }
 }

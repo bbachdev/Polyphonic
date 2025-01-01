@@ -3,7 +3,7 @@ use tauri::AppHandle;
 use crate::formatter::{generate_md5, generate_salt, get_library_hash, save_library_hash};
 use crate::models::{Library, LibraryConfig};
 use crate::music::sync_library;
-use crate::subsonic::ping_server;
+use crate::subsonic::{ping_server, stream};
 
 #[tauri::command]
 pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
@@ -57,4 +57,31 @@ pub async fn sync_collection(
         }
     }
     Ok("Collection synced".to_string())
+}
+
+#[tauri::command]
+pub async fn load_songs(
+    mut library: Library,
+    song_ids: Vec<String>,
+) -> Result<Vec<Vec<u8>>, String> {
+    //Get library pass
+    let hashed_password = get_library_hash(&library).unwrap();
+    library.hashed_password = hashed_password;
+
+    let mut song_data: Vec<Vec<u8>> = vec![];
+    for song_id in song_ids {
+        match stream(&library, &song_id).await {
+            Ok(song) => {
+                song_data.push(song);
+            }
+            Err(e) => println!("Error: {}", e),
+        }
+    }
+    Ok(song_data)
+}
+
+#[tauri::command]
+pub async fn get_libraries(app_handle: AppHandle) -> Result<Vec<Library>, String> {
+    let libraries = crate::db::get_libraries(&app_handle).await.unwrap();
+    Ok(libraries)
 }
