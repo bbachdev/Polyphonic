@@ -3,6 +3,8 @@ import ArtistList from '@/components/collection/ArtistList';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Config } from '@/types/Config';
+import { Album, Song } from '@/types/Music';
+import { getAlbumsForArtist, getSongsForAlbum } from '@/util/db';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { load } from '@tauri-apps/plugin-store';
 import { useEffect, useState } from 'react';
@@ -13,9 +15,32 @@ export const Route = createLazyFileRoute('/collection')({
 })
 
 function Collection() {
+  const [albumList, setAlbumList] = useState<Album[]>([])
+  const [songList, setSongList] = useState<Song[]>([])
 
-  function getArtistAlbums(artistId: string | undefined) {
+  async function getArtistAlbums(artistId: string | undefined) {
     console.log("Selected artist", artistId)
+    if (artistId === undefined) {
+      //TODO: Grab default list
+      setAlbumList([])
+    } else {
+      const albums = await getAlbumsForArtist(artistId)
+      setAlbumList(albums)
+    }
+  }
+
+  async function getAlbumSongs(albumId: string | undefined) {
+    console.log("Selected album", albumId)
+    if (albumId === undefined) {
+      setSongList([])
+    } else {
+      const songs = await getSongsForAlbum(albumId)
+      setSongList(songs)
+    }
+  }
+
+  async function playSong(songId: string) {
+    console.log("Play song", songId)
   }
 
   return (
@@ -34,11 +59,11 @@ function Collection() {
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
         <ResizablePanel defaultSize={60} minSize={30}>
-          <AlbumList />
+          <AlbumList albums={albumList} onAlbumSelected={getAlbumSongs} />
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
         <ResizablePanel defaultSize={20} minSize={20}>
-          <SongList />
+          <SongList songs={songList} onSongPlay={playSong} />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
