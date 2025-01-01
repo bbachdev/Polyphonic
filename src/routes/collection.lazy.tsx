@@ -2,7 +2,10 @@ import AlbumList from '@/components/collection/AlbumList';
 import ArtistList from '@/components/collection/ArtistList';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { Config } from '@/types/Config';
 import { createLazyFileRoute } from '@tanstack/react-router'
+import { load } from '@tauri-apps/plugin-store';
+import { useEffect, useState } from 'react';
 import { FaGear } from "react-icons/fa6";
 
 export const Route = createLazyFileRoute('/collection')({
@@ -10,6 +13,11 @@ export const Route = createLazyFileRoute('/collection')({
 })
 
 function Collection() {
+
+  function getArtistAlbums(artistId: string | undefined) {
+    console.log("Selected artist", artistId)
+  }
+
   return (
     <div className={`w-full flex flex-col`}>
       <div className={`flex flex-row p-4 items-center border-b-2 border-slate-800 dark:border-slate-200`}>
@@ -22,7 +30,7 @@ function Collection() {
       </div>
       <ResizablePanelGroup direction='horizontal'>
         <ResizablePanel defaultSize={20} minSize={15}>
-          <ArtistList />
+          <ArtistList onArtistSelected={getArtistAlbums} />
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
         <ResizablePanel defaultSize={60} minSize={30}>
