@@ -22,7 +22,7 @@ pub async fn insert_library(pool: &Pool<Sqlite>, library: &Library) -> Result<()
     let library_salt = &library.salt;
 
     sqlx::query(
-        "INSERT INTO libraries (id, name, host, port, username, salt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO libraries (id, name, host, port, username, salt) VALUES (?, ?, ?, ?, ?, ?)",
     )
     .bind(library_id)
     .bind(library_name)
@@ -98,7 +98,7 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         let song_duration = song.duration.unwrap_or(0);
 
         sqlx::query(
-            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(song_id)
         .bind(song_title)

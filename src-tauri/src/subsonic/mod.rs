@@ -64,9 +64,9 @@ pub async fn get_albums_for_artist(
             .await
         {
             Ok(album_response) => Ok(album_response),
-            Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
+            Err(e) => Err(anyhow::anyhow!("Album Error: {}", e)),
         },
-        Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
+        Err(e) => Err(anyhow::anyhow!("Album Error: {}", e)),
     }
 }
 
@@ -82,9 +82,9 @@ pub async fn get_songs_for_album(
             .await
         {
             Ok(album_response) => Ok(album_response),
-            Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
+            Err(e) => Err(anyhow::anyhow!("Song Error: {}", e)),
         },
-        Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
+        Err(e) => Err(anyhow::anyhow!("Song Error: {}", e)),
     }
 }
 
@@ -96,18 +96,19 @@ pub async fn get_album_art(
     client: Client,
     path: &String,
 ) -> Result<(), anyhow::Error> {
+    //TODO: Look into distinguishing .png and .jpg
     match client.get(&url).send().await {
         Ok(res) => match res.bytes().await {
             Ok(buf) => {
                 //Save file
-                let mut file = File::create(format!("{}{}.png", path, cover_id))?;
+                let mut file = File::create(format!("{}/cover_art/{}.jpg", path, cover_id))?;
                 match file.write_all(&buf) {
                     Ok(_) => Ok(()),
-                    Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
+                    Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
                 }
             }
-            Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
+            Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
         },
-        Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
+        Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
     }
 }

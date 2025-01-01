@@ -1,3 +1,5 @@
+use std::{fs, path::Path};
+
 use crate::{
     db::{db_connect, insert_albums, insert_artists, insert_library, insert_songs},
     formatter::create_connection_string,
@@ -9,11 +11,16 @@ use futures::future::join_all;
 use tauri::{AppHandle, Manager};
 
 pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(), anyhow::Error> {
+    println!("Get Artists");
     let artists: SubsonicResponse<SubsonicGetArtistsResponse> = get_artists(library).await?;
+    println!("Get Albums");
     let albums: Vec<SubsonicAlbumID3> = get_albums(&artists, library).await?;
+    println!("Get Songs");
     let songs: Vec<SubsonicChild> = get_songs(&albums, library).await?;
+    println!("Get Cover Art");
     get_cover_art(&albums, library, app_handle).await?;
 
+    println!("Insert Library");
     let pool = db_connect(app_handle).await?;
     match insert_library(&pool, library).await {
         Ok(_) => println!("Library inserted"),
@@ -25,6 +32,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     let mut transformed_albums: Vec<Album> = vec![];
     let mut transformed_songs: Vec<Song> = vec![];
 
+    println!("Transform");
     for artist in &artists.data.artists.index {
         for artist_detail in &artist.artist {
             let artist = Artist {
@@ -40,7 +48,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
         let album = Album {
             id: album.id.clone(),
             name: album.name.clone(),
-            artist_id: album.artist.clone(),
+            artist_id: album.artist_id.clone().unwrap_or("".to_string()),
             artist_name: album.artist.clone(),
             library_id: library.id.clone(),
             cover_art: album.cover_art.clone(),
@@ -54,7 +62,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
         let song = Song {
             id: song.id.clone(),
             title: song.title.clone(),
-            artist_id: song.artist_id.clone(),
+            artist_id: song.artist_id.clone().unwrap_or("".to_string()),
             artist_name: song.artist.clone(),
             album_id: song.album_id.clone(),
             album_name: song.album.clone(),
@@ -67,14 +75,17 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     }
 
     //Write to DB
+    println!("Insert Artists");
     match insert_artists(&pool, &transformed_artists).await {
         Ok(_) => println!("Artists inserted"),
         Err(e) => println!("Error: {}", e),
     }
+    println!("Insert Albums");
     match insert_albums(&pool, &transformed_albums).await {
         Ok(_) => println!("Albums inserted"),
         Err(e) => println!("Error: {}", e),
     }
+    println!("Insert Songs");
     match insert_songs(&pool, &transformed_songs).await {
         Ok(_) => println!("Songs inserted"),
         Err(e) => println!("Error: {}", e),
@@ -149,8 +160,14 @@ async fn get_cover_art(
     library: &Library,
     app_handle: &AppHandle,
 ) -> Result<(), anyhow::Error> {
-    let binding = app_handle.path().app_data_dir().unwrap();
+    let binding = app_handle.path().app_config_dir().unwrap();
     let app_data_dir = binding.to_str().unwrap();
+
+    //Create cover_art folder if it doesn't exist
+    let cover_art_dir = format!("{}/cover_art", app_data_dir);
+    if !Path::new(&cover_art_dir).exists() {
+        fs::create_dir(&cover_art_dir).unwrap();
+    }
 
     let data_dir_string = app_data_dir.to_string();
     let base_url = create_connection_string(library, "getCoverArt");
