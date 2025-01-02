@@ -218,7 +218,7 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
         <div className={`p-4 w-full flex flex-row content-between border-t-2 border-slate-800 dark:border-slate-200 items-center`}>
           <div className={`flex flex-row gap-2 items-center basis-0 grow`}>
             <div className={`h-16 w-16 relative`}>
-              <CoverArt src={nowPlaying.cover_art} fallbackSrc={nowPlaying.cover_art + '.png'} alt={nowPlaying.title} className={`h-16 w-16`} />
+              <CoverArt src={nowPlaying.cover_art + '.png'} fallbackSrc={nowPlaying.cover_art + '.jpg'} alt={nowPlaying.title} className={`h-16 w-16`} />
               {playbackState === PlaybackState.Loading && (
                 <div className={`absolute flex items-center justify-center top-0 left-0 h-16 w-16 bg-slate-200 dark:bg-slate-800/50`}>
                   <Spinner size={32} className={``} />

@@ -19,6 +19,7 @@ export default function CoverArt({ className = '', src, fallbackSrc, alt, style 
   };
 
   useEffect(() => {
+    console.log("Loading image", src);
     setImageSrc(src);
   }, [src]);
 

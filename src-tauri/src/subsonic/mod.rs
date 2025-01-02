@@ -1,6 +1,7 @@
 use std::fs::File;
-use std::io::Write;
+use std::io::{Cursor, Write};
 
+use image::{ImageFormat, ImageReader};
 use reqwest::Client;
 
 use crate::formatter::create_connection_string;
@@ -100,8 +101,30 @@ pub async fn get_album_art(
     match client.get(&url).send().await {
         Ok(res) => match res.bytes().await {
             Ok(buf) => {
+                let mut file_extension = "";
+                //Determine file type
+                let reader = ImageReader::new(Cursor::new(&buf));
+                match reader.with_guessed_format().unwrap().format() {
+                    Some(format) => {
+                        if format == ImageFormat::Jpeg {
+                            file_extension = ".jpg";
+                        } else if format == ImageFormat::Png {
+                            file_extension = ".png";
+                        } else if format == ImageFormat::Gif {
+                            file_extension = ".gif";
+                        } else if format == ImageFormat::WebP {
+                            file_extension = ".webp";
+                        }
+                    }
+                    None => {
+                        //Default to png
+                        file_extension = ".png"
+                    }
+                }
+
                 //Save file
-                let mut file = File::create(format!("{}/cover_art/{}", path, cover_id))?;
+                let mut file =
+                    File::create(format!("{}/cover_art/{}{}", path, cover_id, file_extension))?;
                 match file.write_all(&buf) {
                     Ok(_) => Ok(()),
                     Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),

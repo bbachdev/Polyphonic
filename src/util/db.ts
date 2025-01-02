@@ -28,6 +28,7 @@ export async function getAlbumsForArtist(artistId: string) {
       appDataDirPath,
       "/cover_art/" + albums[i].cover_art
     );
+    console.log("File path", filePath);
     const assetUrl = convertFileSrc(filePath);
     albums[i].cover_art = assetUrl;
   }
@@ -38,7 +39,7 @@ export async function getSongsForAlbum(albumId: string) {
   const appDataDirPath = await appDataDir();
   const db = await getDb();
   const songs = await db.select<Song[]>(
-    "SELECT id, title, artist_id, artist_name, album_id, album_name, library_id, track, duration, content_type, cover_art FROM songs WHERE album_id = ? ORDER BY track ASC",
+    "SELECT id, title, artist_id, artist_name, album_id, album_name, library_id, track, disc_number duration, content_type, cover_art FROM songs WHERE album_id = ? ORDER BY track ASC",
     [albumId]
   );
   for (let i = 0; i < songs.length; i++) {
