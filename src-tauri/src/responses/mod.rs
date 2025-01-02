@@ -118,3 +118,20 @@ pub struct SubsonicChild {
     pub content_type: String,
     pub cover_art: Option<String>,
 }
+
+/*******************************************************************************
+ * AlbumList2
+ ******************************************************************************/
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SubsonicGetAlbumList2Response {
+    #[serde(flatten)]
+    pub base: SubsonicBaseResponse,
+    pub album_list_2: SubsonicAlbumList,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SubsonicAlbumList {
+    pub album: Vec<SubsonicAlbumID3>,
+}

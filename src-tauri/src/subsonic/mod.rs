@@ -7,8 +7,8 @@ use reqwest::Client;
 use crate::formatter::create_connection_string;
 use crate::models::Library;
 use crate::responses::{
-    SubsonicBaseResponse, SubsonicGetAlbumsResponse, SubsonicGetArtistsResponse,
-    SubsonicGetSongsResponse, SubsonicResponse,
+    SubsonicBaseResponse, SubsonicGetAlbumList2Response, SubsonicGetAlbumsResponse,
+    SubsonicGetArtistsResponse, SubsonicGetSongsResponse, SubsonicResponse,
 };
 
 /* Ping
@@ -148,5 +148,26 @@ pub async fn stream(library: &Library, song_id: &str) -> Result<Vec<u8>, anyhow:
             Err(e) => Err(anyhow::anyhow!("Stream Error: {}", e)),
         },
         Err(e) => Err(anyhow::anyhow!("Stream Error: {}", e)),
+    }
+}
+
+/* getAlbumList2
+*/
+pub async fn get_album_list(
+    library: &Library,
+    list_type: String,
+) -> Result<SubsonicResponse<SubsonicGetAlbumList2Response>, anyhow::Error> {
+    let mut url = create_connection_string(library, "getAlbumList2");
+    url.push_str(&format!("?type={}&size=50", list_type));
+
+    match reqwest::get(&url).await {
+        Ok(res) => match res
+            .json::<SubsonicResponse<SubsonicGetAlbumList2Response>>()
+            .await
+        {
+            Ok(album_list_response) => Ok(album_list_response),
+            Err(e) => Err(anyhow::anyhow!("Album Error: {}", e)),
+        },
+        Err(e) => Err(anyhow::anyhow!("Album Error: {}", e)),
     }
 }

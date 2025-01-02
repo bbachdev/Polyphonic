@@ -33,7 +33,8 @@ pub fn run() {
             commands::add_server,
             commands::sync_collection,
             commands::load_songs,
-            commands::get_libraries
+            commands::get_libraries,
+            commands::get_recently_played
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
