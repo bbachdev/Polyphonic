@@ -57,6 +57,8 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
   async function loadSong(song: Song) {
     if (song !== undefined && audioRef.current !== null) {
       console.log("Loading song", song.title)
+      setNowPlaying(song)
+      onPlay(song)
 
       //If song is cached, play it
       let audioData, songDataMap
@@ -78,9 +80,6 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
       audioRef.current.load()
       audioRef.current.play()
       setPlaybackState(PlaybackState.Playing)
-
-      setNowPlaying(song)
-      onPlay(song)
 
       //Load nearby songs (if not present)
       songDataMap = new Map<string, string>()
@@ -215,7 +214,7 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
         <source />
         Your browser does not support the audio element.
       </audio>
-      {nowPlaying && playbackState !== PlaybackState.Stopped && (
+      {(playbackState === PlaybackState.Loading || nowPlaying) && (
         <div className={`p-4 w-full flex flex-row content-between border-t-2 border-slate-800 dark:border-slate-200 items-center`}>
           <div className={`flex flex-row gap-2 items-center basis-0 grow`}>
             <div className={`h-16 w-16 relative`}>

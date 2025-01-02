@@ -98,12 +98,13 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         let song_album_name = &song.album_name;
         let song_library_id = &song.library_id;
         let song_track = song.track.unwrap_or(0);
+        let song_disc_number = song.disc_number;
         let song_duration = song.duration.unwrap_or(0);
         let song_content_type = &song.content_type;
         let song_cover_art = &song.cover_art;
 
         sqlx::query(
-            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, duration, content_type, cover_art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, disc_number, duration, content_type, cover_art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(song_id)
         .bind(song_title)
@@ -113,6 +114,7 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         .bind(song_album_name)
         .bind(song_library_id)
         .bind(song_track)
+        .bind(song_disc_number)
         .bind(song_duration)
         .bind(song_content_type)
         .bind(song_cover_art)

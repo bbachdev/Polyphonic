@@ -62,7 +62,7 @@ pub struct Song {
     pub library_id: String,
     pub track: Option<u32>,
     pub duration: Option<u32>,
-    pub disc_number: Option<u32>,
+    pub disc_number: u32,
     pub content_type: String,
     pub cover_art: String,
 }

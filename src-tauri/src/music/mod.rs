@@ -69,7 +69,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
             library_id: library.id.clone(),
             track: song.track,
             duration: song.duration,
-            disc_number: song.disc_number,
+            disc_number: song.disc_number.unwrap_or(1),
             content_type: song.content_type.clone(),
             cover_art: song.cover_art.clone().unwrap_or("".to_string()),
         };
