@@ -12,7 +12,6 @@ export async function stream(
   host = library.host + (library.port !== -1 ? `:${library.port}` : "");
   connectionString = `${host}/rest/stream.view?id=${song.id}&u=${library.username}&t=${library.hashed_password}&s=${library.salt}&v=1.16.1&c=tauri&f=json`;
 
-  console.log("Connection string", connectionString);
   const res = await fetch(connectionString);
   const buffer = await res.arrayBuffer();
 

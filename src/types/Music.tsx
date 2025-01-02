@@ -29,4 +29,9 @@ type Song = {
   cover_art: string;
 }
 
-export type { Artist, Album, Song }
+type Queue = {
+  songs: Song[];
+  current_song: number;
+}
+
+export type { Artist, Album, Song, Queue }

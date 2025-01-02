@@ -4,7 +4,7 @@ import NowPlaying from '@/components/collection/NowPlaying';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Config, Library } from '@/types/Config';
-import { Album, Song } from '@/types/Music';
+import { Album, Queue, Song } from '@/types/Music';
 import { getAlbumsForArtist, getSongsForAlbum } from '@/util/db';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { invoke } from '@tauri-apps/api/core';
@@ -20,7 +20,8 @@ function Collection() {
   const [libraries, setLibraries] = useState<Map<String, Library>>(new Map())
   const [albumList, setAlbumList] = useState<Album[]>([])
   const [songList, setSongList] = useState<Song[]>([])
-  const [nowPlaying, setNowPlaying] = useState<Song | undefined>(undefined)
+  const [queue, setQueue] = useState<Queue>({ songs: [], current_song: -1 })
+  const [nowPlayingId, setNowPlayingId] = useState<string | undefined>(undefined)
 
   async function getArtistAlbums(artistId: string | undefined) {
     console.log("Selected artist", artistId)
@@ -43,8 +44,9 @@ function Collection() {
     }
   }
 
-  async function playSong(songId: string) {
-    setNowPlaying(songList.find(s => s.id === songId))
+  async function playSong(newQueue: Queue) {
+    console.log("Play song", newQueue)
+    setQueue(newQueue)
   }
 
   useEffect(() => {
@@ -84,10 +86,10 @@ function Collection() {
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
         <ResizablePanel defaultSize={30} minSize={20}>
-          <SongList songs={songList} onSongPlay={playSong} />
+          <SongList nowPlayingId={nowPlayingId} songs={songList} onSongPlay={playSong} />
         </ResizablePanel>
       </ResizablePanelGroup>
-      <NowPlaying nowPlaying={nowPlaying} libraries={libraries} />
+      <NowPlaying newQueue={queue} libraries={libraries} onPlay={(song) => setNowPlayingId(song?.id)} />
     </div>
   )
 }
