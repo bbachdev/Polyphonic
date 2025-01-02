@@ -214,7 +214,7 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
         <source />
         Your browser does not support the audio element.
       </audio>
-      {(playbackState === PlaybackState.Loading || nowPlaying) && (
+      {nowPlaying && (
         <div className={`p-4 w-full flex flex-row content-between border-t-2 border-slate-800 dark:border-slate-200 items-center`}>
           <div className={`flex flex-row gap-2 items-center basis-0 grow`}>
             <div className={`h-16 w-16 relative`}>
