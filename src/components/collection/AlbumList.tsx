@@ -8,7 +8,7 @@ import { getAlbumsById } from '@/util/db'
 interface AlbumListProps {
   parentAlbums: Album[],
   libraries: Map<String, Library>,
-  onAlbumSelected: (albumId: string | undefined) => void
+  onAlbumSelected: (albumId: Album | undefined) => void
 }
 
 export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: AlbumListProps) {
@@ -48,8 +48,9 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
     } else {
       //Regular click
       if (selectedAlbum?.id !== albumId) {
-        setSelectedAlbum(albums.find(a => a.id === albumId))
-        onAlbumSelected(albumId)
+        let album = albums.find(a => a.id === albumId)
+        setSelectedAlbum(album)
+        onAlbumSelected(album)
       }
     }
   }

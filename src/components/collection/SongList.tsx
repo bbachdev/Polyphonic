@@ -1,12 +1,13 @@
-import { Queue, Song } from '@/types/Music'
+import { ListInfo, Queue, Song } from '@/types/Music'
 
 interface SongListProps {
-  songs: Song[]
+  songs: Song[],
+  listInfo: ListInfo | undefined,
   nowPlayingId: string | undefined
   onSongPlay: (queue: Queue) => void
 }
 
-export default function SongList({ songs, nowPlayingId, onSongPlay, }: SongListProps) {
+export default function SongList({ songs, listInfo, nowPlayingId, onSongPlay, }: SongListProps) {
   function playSong(songId: string) {
     let currentSong = songs.findIndex(s => s.id === songId)
     let newQueue: Queue = { songs: songs, current_song: currentSong }
@@ -15,7 +16,12 @@ export default function SongList({ songs, nowPlayingId, onSongPlay, }: SongListP
 
   return (
     <div className={`w-full h-dvh flex flex-col`}>
-      <h1 className={`p-2`}>Song List</h1>
+      {listInfo && (
+        <div className={`py-2 px-4 flex flex-col`}>
+          <p className={`text-2xl`}>{listInfo.title}</p>
+          <p className={`text-base`}>{listInfo.author}</p>
+        </div>
+      )}
       <div className={`overflow-y-auto`}>
         {songs.map((song, index) => (
           <div className={`p-2 cursor-pointer flex flex-row items-center ${song.id === nowPlayingId ? 'dark:bg-slate-700' : ''} dark:hover:bg-slate-700`} key={index} onClick={() => playSong(song.id)}>

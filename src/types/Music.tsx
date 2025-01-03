@@ -34,4 +34,10 @@ type Queue = {
   current_song: number;
 }
 
-export type { Artist, Album, Song, Queue }
+//Could be album, or playlist
+type ListInfo = {
+  title: string;
+  author: string;
+}
+
+export type { Artist, Album, Song, Queue, ListInfo }

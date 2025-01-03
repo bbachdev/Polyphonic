@@ -4,7 +4,7 @@ import NowPlaying from '@/components/collection/NowPlaying';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Config, Library } from '@/types/Config';
-import { Album, Queue, Song } from '@/types/Music';
+import { Album, ListInfo, Queue, Song } from '@/types/Music';
 import { getAlbumsForArtist, getSongsForAlbum } from '@/util/db';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { invoke } from '@tauri-apps/api/core';
@@ -22,6 +22,7 @@ function Collection() {
   const [songList, setSongList] = useState<Song[]>([])
   const [queue, setQueue] = useState<Queue>({ songs: [], current_song: -1 })
   const [nowPlayingId, setNowPlayingId] = useState<string | undefined>(undefined)
+  const [selectedListInfo, setSelectedListInfo] = useState<ListInfo | undefined>(undefined)
 
   async function getArtistAlbums(artistId: string | undefined) {
     console.log("Selected artist", artistId)
@@ -34,12 +35,12 @@ function Collection() {
     }
   }
 
-  async function getAlbumSongs(albumId: string | undefined) {
-    console.log("Selected album", albumId)
-    if (albumId === undefined) {
+  async function getAlbumSongs(album: Album | undefined) {
+    if (album === undefined) {
       setSongList([])
     } else {
-      const songs = await getSongsForAlbum(albumId)
+      const songs = await getSongsForAlbum(album.id)
+      setSelectedListInfo({ title: album.name, author: album.artist_name })
       setSongList(songs)
     }
   }
@@ -86,7 +87,7 @@ function Collection() {
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
         <ResizablePanel defaultSize={30} minSize={20}>
-          <SongList nowPlayingId={nowPlayingId} songs={songList} onSongPlay={playSong} />
+          <SongList nowPlayingId={nowPlayingId} songs={songList} listInfo={selectedListInfo} onSongPlay={playSong} />
         </ResizablePanel>
       </ResizablePanelGroup>
       <NowPlaying newQueue={queue} libraries={libraries} onPlay={(song) => setNowPlayingId(song?.id)} />
