@@ -55,7 +55,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
   }
 
   return (
-    <div className={`w-full h-dvh flex flex-col`}>
+    <div className={`w-full h-dvh flex flex-col justify-center`}>
       <h1 className={`p-2`}>Album List</h1>
       <div className={`overflow-y-auto albumGrid text-center`}>
         {albums.map((album, index) => (

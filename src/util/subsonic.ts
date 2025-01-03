@@ -21,7 +21,7 @@ export async function scrobble(
   songId: string,
   library: Library
 ): Promise<boolean> {
-  let host = library.host + (library.port ? `:${library.port}` : "");
+  let host = library.host + (library.port !== -1 ? `:${library.port}` : "");
   let connectionString = `${host}/rest/scrobble.view?id=${songId}&u=${library.username}&t=${library.hashed_password}&s=${library.salt}&v=1.16.1&c=tauri&f=json`;
 
   const res = await fetch(connectionString);

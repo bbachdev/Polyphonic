@@ -1,6 +1,6 @@
 import { Library } from '@/types/Config';
 import { Queue, Song } from '@/types/Music'
-import { stream } from '@/util/subsonic';
+import { scrobble, stream } from '@/util/subsonic';
 import { RefObject, useEffect, useRef, useState } from 'react';
 import { FaPlayCircle, FaPauseCircle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { MdSkipNext, MdSkipPrevious } from "react-icons/md";
@@ -80,6 +80,9 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
       audioRef.current.load()
       audioRef.current.play()
       setPlaybackState(PlaybackState.Playing)
+
+      //Scrobble song
+      scrobble(song.id, libraries.get(song.library_id)!)
 
       //Load nearby songs (if not present)
       songDataMap = new Map<string, string>()
