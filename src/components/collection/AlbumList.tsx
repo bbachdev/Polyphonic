@@ -1,14 +1,44 @@
 import { Album } from '@/types/Music'
-import { useState, MouseEvent } from 'react'
+import { useState, MouseEvent, useEffect } from 'react'
 import CoverArt from './CoverArt'
+import { Library } from '@/types/Config'
+import { invoke } from '@tauri-apps/api/core'
+import { getAlbumsById } from '@/util/db'
 
 interface AlbumListProps {
-  albums: Album[],
+  parentAlbums: Album[],
+  libraries: Map<String, Library>,
   onAlbumSelected: (albumId: string | undefined) => void
 }
 
-export default function AlbumList({ albums, onAlbumSelected }: AlbumListProps) {
+export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: AlbumListProps) {
+  const [albums, setAlbums] = useState<Album[]>([])
   const [selectedAlbum, setSelectedAlbum] = useState<Album | undefined>(undefined)
+
+  useEffect(() => {
+    async function getRecentlyPlayed() {
+      //TODO: Don't hardcode 1st element
+      console.log("Libraries", libraries)
+      if (libraries.size > 0) {
+        console.log("Library, ", libraries.values().next().value)
+        const recentlyPlayed = await invoke('get_recently_played', { library: libraries.values().next().value })
+          .then(async (albumIds: any) => {
+            const albumListAlbums = await getAlbumsById(albumIds as string[])
+            setAlbums(albumListAlbums)
+            console.log("Album ids", albumIds)
+            return albumIds
+          })
+
+        console.log("Recently played", recentlyPlayed)
+      }
+
+    }
+    getRecentlyPlayed()
+  }, [libraries])
+
+  useEffect(() => {
+    setAlbums(parentAlbums)
+  }, [parentAlbums])
 
   function selectAlbum(e: MouseEvent, albumId: string) {
     //Ctrl + click

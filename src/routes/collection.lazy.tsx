@@ -82,7 +82,7 @@ function Collection() {
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
         <ResizablePanel defaultSize={50} minSize={30}>
-          <AlbumList albums={albumList} onAlbumSelected={getAlbumSongs} />
+          <AlbumList libraries={libraries} parentAlbums={albumList} onAlbumSelected={getAlbumSongs} />
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
         <ResizablePanel defaultSize={30} minSize={20}>

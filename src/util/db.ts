@@ -52,3 +52,26 @@ export async function getSongsForAlbum(albumId: string) {
   }
   return songs;
 }
+
+export async function getAlbumsById(albumIds: string[]) {
+  const appDataDirPath = await appDataDir();
+  const db = await getDb();
+  let albumIdsWithQuotes = albumIds.map((id) => `"${id}"`);
+  let albumQuery =
+    "SELECT id, name, artist_id, artist_name, cover_art, year, duration FROM albums WHERE id IN (" +
+    albumIdsWithQuotes.join(",") +
+    ")";
+  console.log("Album query", albumQuery);
+  const albums = await db.select<Album[]>(albumQuery);
+  console.log("Query albums", albums);
+  for (let i = 0; i < albums.length; i++) {
+    const filePath = await join(
+      appDataDirPath,
+      "/cover_art/" + albums[i].cover_art
+    );
+    console.log("File path", filePath);
+    const assetUrl = convertFileSrc(filePath);
+    albums[i].cover_art = assetUrl;
+  }
+  return albums;
+}

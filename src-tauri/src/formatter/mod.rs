@@ -4,7 +4,13 @@ use keyring::Entry;
 /* String + Library Formatting */
 pub fn create_connection_string(library: &Library, endpoint: &str) -> String {
     let host = match library.port {
-        Some(port) => format!("{}:{}", library.host, port),
+        Some(port) => {
+            if port != -1 {
+                format!("{}:{}", library.host, port)
+            } else {
+                library.host.clone()
+            }
+        }
         None => library.host.clone(),
     };
     let conn_string = format!(
