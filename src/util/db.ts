@@ -73,5 +73,9 @@ export async function getAlbumsById(albumIds: string[]) {
     const assetUrl = convertFileSrc(filePath);
     albums[i].cover_art = assetUrl;
   }
+
+  //Sort albums
+  const ids = albumIds.reduce((map, id, i) => map.set(id, i), new Map());
+  albums.sort((a, b) => ids.get(a.id) - ids.get(b.id));
   return albums;
 }

@@ -158,7 +158,7 @@ pub async fn get_album_list(
     list_type: String,
 ) -> Result<SubsonicResponse<SubsonicGetAlbumList2Response>, anyhow::Error> {
     let mut url = create_connection_string(library, "getAlbumList2");
-    url.push_str(&format!("&type={}&size=50", list_type));
+    url.push_str(&format!("&type={}&size=42", list_type));
     match reqwest::get(&url).await {
         Ok(res) => match res
             .json::<SubsonicResponse<SubsonicGetAlbumList2Response>>()
