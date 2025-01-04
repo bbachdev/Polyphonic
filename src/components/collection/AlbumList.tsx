@@ -4,6 +4,7 @@ import CoverArt from './CoverArt'
 import { Library } from '@/types/Config'
 import { invoke } from '@tauri-apps/api/core'
 import { getAlbumsById } from '@/util/db'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface AlbumListProps {
   parentAlbums: Album[],
@@ -56,21 +57,24 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
   }
 
   return (
-    <div className={`w-full h-dvh flex flex-col justify-center`}>
+    <div className={`w-full h-full flex flex-col justify-center`}>
       <h1 className={`p-2`}>Album List</h1>
-      <div className={`overflow-y-auto albumGrid text-center`}>
-        {albums.map((album, index) => (
-          <div className={`p-2 cursor-pointer ${(album.id === selectedAlbum?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectAlbum(e, album.id)}>
-            <div className={`flex flex-col`}>
-              <CoverArt src={album.cover_art + '.png'} fallbackSrc={album.cover_art + '.jpg'} alt={album.name} className={`h-32 w-32`} />
+      <ScrollArea className={`w-full`}>
+        <div className={`albumGrid text-center`}>
+          {albums.map((album, index) => (
+            <div className={`p-2 cursor-pointer ${(album.id === selectedAlbum?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectAlbum(e, album.id)}>
               <div className={`flex flex-col`}>
-                <p className={`px-1 font-semibold text-sm line-clamp-1 break-all`}>{album.name}</p>
-                <p className={`mt-1 px-1 text-xs dark:text-slate-200/90 line-clamp-1 break-all`}>{album.artist_name}</p>
+                <CoverArt src={album.cover_art + '.png'} fallbackSrc={album.cover_art + '.jpg'} alt={album.name} className={`h-32 w-32`} />
+                <div className={`flex flex-col`}>
+                  <p className={`px-1 font-semibold text-sm line-clamp-1 break-all`}>{album.name}</p>
+                  <p className={`mt-1 px-1 text-xs dark:text-slate-200/90 line-clamp-1 break-all`}>{album.artist_name}</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </ScrollArea>
+
     </div>
   )
 }

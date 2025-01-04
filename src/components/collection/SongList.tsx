@@ -1,4 +1,5 @@
 import { ListInfo, Queue, Song } from '@/types/Music'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface SongListProps {
   songs: Song[],
@@ -15,14 +16,14 @@ export default function SongList({ songs, listInfo, nowPlayingId, onSongPlay, }:
   }
 
   return (
-    <div className={`w-full h-dvh flex flex-col`}>
+    <div className={`w-full h-full flex flex-col`}>
       {listInfo && (
         <div className={`py-2 px-4 flex flex-col`}>
           <p className={`text-2xl`}>{listInfo.title}</p>
           <p className={`text-base`}>{listInfo.author}</p>
         </div>
       )}
-      <div className={`overflow-y-auto`}>
+      <ScrollArea className={`w-full`}>
         {songs.map((song, index) => (
           <div className={`p-2 cursor-pointer flex flex-row items-center ${song.id === nowPlayingId ? 'dark:bg-slate-700' : ''} dark:hover:bg-slate-700`} key={index} onClick={() => playSong(song.id)}>
             <span className={`mr-2`}>{song.track.toLocaleString('en-US', { minimumIntegerDigits: 2 })}</span>
@@ -32,7 +33,7 @@ export default function SongList({ songs, listInfo, nowPlayingId, onSongPlay, }:
             </div>
           </div>
         ))}
-      </div>
+      </ScrollArea>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { Artist } from '@/types/Music'
 import { getArtists } from '@/util/db'
 import { MouseEvent, useEffect, useState } from 'react'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface ArtistListProps {
   onArtistSelected: (artistId: string | undefined) => void
@@ -33,13 +34,16 @@ export default function ArtistList({ onArtistSelected }: ArtistListProps) {
   }
 
   return (
-    <div className={`w-full h-dvh flex flex-col`}>
-      <h1 className={`p-2`}>Artist List</h1>
-      <ul className={`overflow-y-auto`}>
-        {artists.map((artist, index) => (
-          <li className={`p-2 cursor-pointer ${(artist.id === selectedArtist?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectArtist(e, artist.id)}>{artist.name}</li>
-        ))}
-      </ul>
+    <div className={`w-full h-full flex flex-col`}>
+      <h1 className={`p-2`}>Artists</h1>
+      <ScrollArea className={`w-full`}>
+        <ul>
+          {artists.map((artist, index) => (
+            <li className={`p-2 cursor-pointer ${(artist.id === selectedArtist?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectArtist(e, artist.id)}>{artist.name}</li>
+          ))}
+        </ul>
+
+      </ScrollArea>
     </div>
   )
 }
