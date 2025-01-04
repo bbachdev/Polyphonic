@@ -33,6 +33,10 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
   const [volume, setVolume] = useState(DEFAULT_VOLUME);
   const [savedVolume, setSavedVolume] = useState(DEFAULT_VOLUME) //Used when toggling mute
 
+  //Seekbar
+  const [currentTime, setCurrentTime] = useState('0:00');
+  const [duration, setDuration] = useState('0:00');
+
   //Refs
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLInputElement>(null);
@@ -56,9 +60,15 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
 
   async function loadSong(song: Song) {
     if (song !== undefined && audioRef.current !== null) {
-      console.log("Loading song", song.title)
+
       setNowPlaying(song)
       onPlay(song)
+
+      //Reset seekbar
+      if (progressRef.current) {
+        progressRef.current.value = '0';
+        progressRef.current.style.background = `linear-gradient(to right, ${PROGRESS_COLOR} ${progressRef.current.value}%, #ccc ${progressRef.current.value}%)`;
+      }
 
       //If song is cached, play it
       let audioData, songDataMap
@@ -204,6 +214,24 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
     volumeRef.current.style.background = `linear-gradient(to right, ${PROGRESS_COLOR} ${volumeRef.current.value}%, #ccc ${volumeRef.current.value}%)`;
   }
 
+  /* Seek-Related */
+  const updateTime = () => {
+    if (!audioRef.current || !progressRef.current) return;
+    const { currentTime, duration } = audioRef.current;
+    const progressPercent = (currentTime / duration) * 100;
+    progressRef.current.value = progressPercent.toString();
+    progressRef.current.style.background = `linear-gradient(to right, ${PROGRESS_COLOR} ${progressRef.current.value}%, #ccc ${progressRef.current.value}%)`;
+
+    //Update time strings
+    setCurrentTime(`${Math.floor(currentTime / 60)}:${String(Math.floor(currentTime % 60)).padStart(2, '0')}`);
+  }
+
+  const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!audioRef.current) return;
+    const percent = Number(e.target.value) / 100;
+    audioRef.current.currentTime = percent * audioRef.current.duration;
+  }
+
   const updateProgress = (ref: RefObject<HTMLInputElement>) => {
     if (ref.current) {
       const sliderValue = Number(ref.current.value);
@@ -213,55 +241,63 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
 
   return (
     <>
-      <audio ref={audioRef} onEnded={() => nextSong()}>
+      <audio ref={audioRef} onTimeUpdate={updateTime} onEnded={() => nextSong()}>
         <source />
         Your browser does not support the audio element.
       </audio>
       {nowPlaying && (
-        <div className={`p-4 w-full flex flex-row content-between border-t-2 border-slate-800 dark:border-slate-200 items-center`}>
-          <div className={`flex flex-row gap-2 items-center basis-0 grow`}>
-            <div className={`h-16 w-16 relative`}>
-              <CoverArt src={nowPlaying.cover_art + '.png'} fallbackSrc={nowPlaying.cover_art + '.jpg'} alt={nowPlaying.title} className={`h-16 w-16`} />
-              {playbackState === PlaybackState.Loading && (
-                <div className={`absolute flex items-center justify-center top-0 left-0 h-16 w-16 bg-slate-200 dark:bg-slate-800/50`}>
-                  <Spinner size={32} className={``} />
-                </div>
-              )}
-            </div>
-            <div className={`flex flex-col`}>
-              <p className={`px-1 font-semibold text-lg line-clamp-1 break-all`}>{nowPlaying.title}</p>
-              <p className={`mt-1 px-1 text-xs dark:text-slate-200/90 line-clamp-1 break-all`}>{nowPlaying.artist_name}</p>
-            </div>
-          </div>
-          <div className={`flex flex-row items-center gap-2`}>
-            <button onClick={previousSong} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
-              <MdSkipPrevious className={`h-10 w-10`} />
-            </button>
-            {playbackState === PlaybackState.Playing && (
-              <button onClick={pause} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
-                <FaPauseCircle className={`h-10 w-10`} />
-              </button>
-            )}
-            {playbackState === PlaybackState.Paused && (
-              <button onClick={play} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
-                <FaPlayCircle className={`h-10 w-10`} />
-              </button>
-            )}
-            <button onClick={nextSong} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
-              <MdSkipNext className={`h-10 w-10`} />
-            </button>
+        <div className={`flex flex-col w-full border-t-2 border-slate-800 dark:border-slate-200`}>
+          <div className={'flex flex-row w-full'}>
+            <span className={`text-sm text-slate-200 px-2`}>{currentTime}</span>
+            <input className={'w-full cursor-pointer'} ref={progressRef} type="range" step={`any`} defaultValue={0} onChange={(e) => seek(e)} onInput={() => updateProgress(progressRef)} />
+            <span className={`text-sm text-slate-200 mx-3`}>{duration}</span>
           </div>
 
-          { /* Volume slider */}
-          <div className={' basis-0 grow flex flex-row h-fit space-x-2 items-center'}>
-            <div className={'ml-auto flex cursor-pointer w-fit hover:text-gray-400'}>
-              {volume > 0 ?
-                <FaVolumeUp onClick={toggleMute} fontSize={'medium'} /> :
-                <FaVolumeMute onClick={toggleMute} fontSize={'medium'} />
-              }
+          <div className={`p-4 w-full flex flex-row content-between items-center`}>
+            <div className={`flex flex-row gap-2 items-center basis-0 grow`}>
+              <div className={`h-16 w-16 relative`}>
+                <CoverArt src={nowPlaying.cover_art + '.png'} fallbackSrc={nowPlaying.cover_art + '.jpg'} alt={nowPlaying.title} className={`h-16 w-16`} />
+                {playbackState === PlaybackState.Loading && (
+                  <div className={`absolute flex items-center justify-center top-0 left-0 h-16 w-16 bg-slate-200 dark:bg-slate-800/50`}>
+                    <Spinner size={32} className={``} />
+                  </div>
+                )}
+              </div>
+              <div className={`flex flex-col`}>
+                <p className={`px-1 font-semibold text-lg line-clamp-1 break-all`}>{nowPlaying.title}</p>
+                <p className={`mt-1 px-1 text-xs dark:text-slate-200/90 line-clamp-1 break-all`}>{nowPlaying.artist_name}</p>
+              </div>
             </div>
-            <div className={'flex'}>
-              <input ref={volumeRef} type="range" defaultValue={volume} min={0} max={100} step={1} onChange={(e) => changeVolume(Number(e.target.value))} onInput={() => updateProgress(volumeRef)} />
+            <div className={`flex flex-row items-center gap-2`}>
+              <button onClick={previousSong} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
+                <MdSkipPrevious className={`h-10 w-10`} />
+              </button>
+              {playbackState === PlaybackState.Playing && (
+                <button onClick={pause} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
+                  <FaPauseCircle className={`h-10 w-10`} />
+                </button>
+              )}
+              {playbackState === PlaybackState.Paused && (
+                <button onClick={play} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
+                  <FaPlayCircle className={`h-10 w-10`} />
+                </button>
+              )}
+              <button onClick={nextSong} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
+                <MdSkipNext className={`h-10 w-10`} />
+              </button>
+            </div>
+
+            { /* Volume slider */}
+            <div className={' basis-0 grow flex flex-row h-fit space-x-2 items-center'}>
+              <div className={'ml-auto flex cursor-pointer w-fit hover:text-gray-400'}>
+                {volume > 0 ?
+                  <FaVolumeUp onClick={toggleMute} fontSize={'medium'} /> :
+                  <FaVolumeMute onClick={toggleMute} fontSize={'medium'} />
+                }
+              </div>
+              <div className={'flex'}>
+                <input ref={volumeRef} type="range" defaultValue={volume} min={0} max={100} step={1} onChange={(e) => changeVolume(Number(e.target.value))} onInput={() => updateProgress(volumeRef)} />
+              </div>
             </div>
           </div>
         </div>
