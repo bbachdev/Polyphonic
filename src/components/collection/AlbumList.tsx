@@ -16,29 +16,39 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
   const [albums, setAlbums] = useState<Album[]>([])
   const [selectedAlbum, setSelectedAlbum] = useState<Album | undefined>(undefined)
 
-  useEffect(() => {
-    async function getRecentlyPlayed() {
-      //TODO: Don't hardcode 1st element
-      console.log("Libraries", libraries)
-      if (libraries.size > 0) {
-        console.log("Library, ", libraries.values().next().value)
-        const recentlyPlayed = await invoke('get_recently_played', { library: libraries.values().next().value })
-          .then(async (albumIds: any) => {
-            const albumListAlbums = await getAlbumsById(albumIds as string[])
-            setAlbums(albumListAlbums)
-            console.log("Album ids", albumIds)
-            return albumIds
-          })
+  async function getRecentlyPlayed() {
+    //TODO: Don't hardcode 1st element
+    console.log("Libraries", libraries)
+    if (libraries.size > 0) {
+      console.log("Library, ", libraries.values().next().value)
+      const recentlyPlayed = await invoke('get_recently_played', { library: libraries.values().next().value })
+        .then(async (albumIds: any) => {
+          const albumListAlbums = await getAlbumsById(albumIds as string[])
+          setAlbums(albumListAlbums)
+          console.log("Album ids", albumIds)
+          return albumIds
+        })
 
-        console.log("Recently played", recentlyPlayed)
-      }
-
+      console.log("Recently played", recentlyPlayed)
     }
-    getRecentlyPlayed()
+  }
+
+  useEffect(() => {
+    async function getInitialAlbumList() {
+      getRecentlyPlayed()
+    }
+    getInitialAlbumList()
   }, [libraries])
 
   useEffect(() => {
-    setAlbums(parentAlbums)
+    async function updateAlbumList() {
+      if(parentAlbums && parentAlbums.length === 0) {
+        getRecentlyPlayed()
+      }else {
+        setAlbums(parentAlbums)
+      }
+    }
+    updateAlbumList()
   }, [parentAlbums])
 
   function selectAlbum(e: MouseEvent, albumId: string) {
@@ -57,7 +67,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
   }
 
   return (
-    <div className={`w-full h-full flex flex-col justify-center`}>
+    <div className={`w-full h-full flex flex-col`}>
       <h1 className={`p-2`}>Album List</h1>
       <ScrollArea className={`w-full`}>
         <div className={`albumGrid text-center`}>
