@@ -39,10 +39,11 @@ export async function getSongsForAlbum(albumId: string) {
   const appDataDirPath = await appDataDir();
   const db = await getDb();
   const songs = await db.select<Song[]>(
-    "SELECT id, title, artist_id, artist_name, album_id, album_name, library_id, track, disc_number duration, content_type, cover_art FROM songs WHERE album_id = ? ORDER BY track ASC",
+    "SELECT id, title, artist_id, artist_name, album_id, album_name, library_id, track, disc_number, duration, content_type, cover_art FROM songs WHERE album_id = ? ORDER BY track ASC",
     [albumId]
   );
   for (let i = 0; i < songs.length; i++) {
+    console.log("Song length", songs[i].duration)
     const filePath = await join(
       appDataDirPath,
       "/cover_art/" + songs[i].cover_art

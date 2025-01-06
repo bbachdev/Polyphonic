@@ -3,9 +3,11 @@ import { Queue, Song } from '@/types/Music'
 import { scrobble, stream } from '@/util/subsonic';
 import { RefObject, useEffect, useRef, useState } from 'react';
 import { FaPlayCircle, FaPauseCircle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
+import { BiSolidPlaylist } from "react-icons/bi";
 import { MdSkipNext, MdSkipPrevious } from "react-icons/md";
 import CoverArt from '@/components/collection/CoverArt';
 import Spinner from '@/components/ui/spinner';
+import QueueList from './QueueList';
 
 //Make default lower volume for better UX
 const DEFAULT_VOLUME = 65;
@@ -88,6 +90,12 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
 
       audioRef.current.src = audioData
       audioRef.current.load()
+      console.log("Song", song)
+      let secondsDate = new Date(0)
+      secondsDate.setSeconds(song.duration)
+      console.log("Test: ", secondsDate.toISOString().slice(11, 19))
+      var timestring = secondsDate.toISOString().slice(11, 19).replace(/^0+:(0+)?/, '')
+      setDuration(timestring)
       audioRef.current.play()
       setPlaybackState(PlaybackState.Playing)
 
@@ -239,6 +247,17 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
     }
   }
 
+  /* Queue-Related */
+  function queueItemClicked(index: number) {
+    //Find song in queue
+    loadSong(queue.songs[index])
+  }
+
+  function adjustQueue(newQueue: Queue) {
+    //TODO: Make sure load isn't re-triggered
+    //setQueue(newQueue)
+  }
+
   return (
     <>
       <audio ref={audioRef} onTimeUpdate={updateTime} onEnded={() => nextSong()}>
@@ -298,6 +317,12 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
               <div className={'flex'}>
                 <input ref={volumeRef} type="range" defaultValue={volume} min={0} max={100} step={1} onChange={(e) => changeVolume(Number(e.target.value))} onInput={() => updateProgress(volumeRef)} />
               </div>
+              <button>
+                <BiSolidPlaylist className={`h-8 w-8`} />
+              </button>
+              {/* <div>
+                <QueueList queue={queue} onQueueItemClick={queueItemClicked} onQueueChange={adjustQueue} />
+              </div> */}
             </div>
           </div>
         </div>
