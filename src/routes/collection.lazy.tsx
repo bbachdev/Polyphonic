@@ -1,6 +1,7 @@
 import AlbumList from '@/components/collection/AlbumList';
 import ArtistList from '@/components/collection/ArtistList';
 import NowPlaying from '@/components/collection/NowPlaying';
+import PlaylistList from '@/components/collection/PlaylistList';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Config, Library } from '@/types/Config';
@@ -23,6 +24,7 @@ function Collection() {
   const [queue, setQueue] = useState<Queue>({ songs: [], current_song: -1 })
   const [nowPlayingId, setNowPlayingId] = useState<string | undefined>(undefined)
   const [selectedListInfo, setSelectedListInfo] = useState<ListInfo | undefined>(undefined)
+  const [leftView, setLeftView] = useState<'artist' | 'playlist'>('artist')
 
   async function getArtistAlbums(artistId: string | undefined) {
     console.log("Selected artist", artistId)
@@ -33,6 +35,11 @@ function Collection() {
       const albums = await getAlbumsForArtist(artistId)
       setAlbumList(albums)
     }
+  }
+
+  async function getPlaylistSongs(playlistId: string | undefined) {
+    console.log("Selected playlist", playlistId)
+    
   }
 
   async function getAlbumSongs(album: Album | undefined) {
@@ -79,7 +86,12 @@ function Collection() {
       </div>
       <ResizablePanelGroup direction='horizontal'>
         <ResizablePanel defaultSize={20} minSize={15}>
-          <ArtistList onArtistSelected={getArtistAlbums} />
+          { leftView === 'artist' && (
+            <ArtistList onArtistSelected={getArtistAlbums} onPlaylistClicked={() =>setLeftView('playlist')} />
+          )}
+          { leftView === 'playlist' && (
+            <PlaylistList onPlaylistSelected={getPlaylistSongs} onPlaylistClicked={() => setLeftView('artist')} />
+          )}
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
         <ResizablePanel defaultSize={58} minSize={30}>

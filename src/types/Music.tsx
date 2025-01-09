@@ -29,6 +29,16 @@ type Song = {
   cover_art: string;
 }
 
+type Playlist = {
+  id: string;
+  name: string;
+  owner: string;
+  created: string;
+  modified: string;
+  song_count: number;
+  duration: number;
+}
+
 type Queue = {
   songs: Song[];
   current_song: number;
@@ -40,4 +50,4 @@ type ListInfo = {
   author: string;
 }
 
-export type { Artist, Album, Song, Queue, ListInfo }
+export type { Artist, Album, Song, Queue, Playlist, ListInfo }

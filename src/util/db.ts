@@ -1,4 +1,4 @@
-import { Album, Artist, Song } from "@/types/Music";
+import { Album, Artist, Playlist, Song } from "@/types/Music";
 import Database from "@tauri-apps/plugin-sql";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/core";
@@ -79,4 +79,23 @@ export async function getAlbumsById(albumIds: string[]) {
   const ids = albumIds.reduce((map, id, i) => map.set(id, i), new Map());
   albums.sort((a, b) => ids.get(a.id) - ids.get(b.id));
   return albums;
+}
+
+//Playlist-related
+export async function getPlaylists() {
+  const db = await getDb();
+  let playlistQuery =
+    "SELECT id, name, owner, created, modified, song_count, duration FROM playlists ORDER BY name COLLATE NOCASE ASC";
+  const playlists: Playlist[] = await db.select<Playlist[]>(playlistQuery);
+  return playlists
+}
+
+export async function getSongsFromPlaylist(playlistId: string) {
+  //Invoke, then get song data from DB
+
+  const db = await getDb();
+  let songQuery =
+    "SELECT id, title, artist_id, artist_name, album_id, album_name, track, disc_number, duration, content_type, cover_art FROM songs WHERE playlist_id = ? ORDER BY track ASC";
+  const songs: Song[] = await db.select<Song[]>(songQuery, [playlistId]);
+  return songs
 }

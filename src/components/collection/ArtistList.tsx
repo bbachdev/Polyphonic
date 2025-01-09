@@ -2,12 +2,14 @@ import { Artist } from '@/types/Music'
 import { getArtists } from '@/util/db'
 import { MouseEvent, useEffect, useState } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { HiSwitchHorizontal } from "react-icons/hi";
 
 interface ArtistListProps {
   onArtistSelected: (artistId: string | undefined) => void
+  onPlaylistClicked: () => void
 }
 
-export default function ArtistList({ onArtistSelected }: ArtistListProps) {
+export default function ArtistList({ onArtistSelected, onPlaylistClicked }: ArtistListProps) {
   const [artists, setArtists] = useState<Artist[]>([])
   const [selectedArtist, setSelectedArtist] = useState<Artist | undefined>(undefined)
 
@@ -35,7 +37,13 @@ export default function ArtistList({ onArtistSelected }: ArtistListProps) {
 
   return (
     <div className={`w-full h-full flex flex-col`}>
-      <h1 className={`p-2`}>Artists</h1>
+      <div className={`p-2 flex flex-row items-center`}>
+        <h1>Artists</h1>
+        <button className={`ml-auto text-slate-400 underline`} onClick={onPlaylistClicked}>
+          <span className={`flex flex-row gap-1 items-center`}><HiSwitchHorizontal />Playlists</span>
+        </button>
+      </div>
+      
       <ScrollArea className={`w-full`}>
         <ul>
           {artists.map((artist, index) => (

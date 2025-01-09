@@ -18,6 +18,12 @@ pub fn run() {
       CREATE TABLE IF NOT EXISTS albums (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT, artist_id TEXT REFERENCES artists(id), artist_name TEXT, cover_art TEXT, year INTEGER, duration INTEGER);
       CREATE TABLE IF NOT EXISTS songs (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), title TEXT, artist_id TEXT, artist_name TEXT, album_id TEXT, album_name TEXT, track INTEGER, disc_number INTEGER, year INTEGER, duration INTEGER, content_type TEXT, cover_art TEXT);",
       kind: MigrationKind::Up,
+    },
+    Migration {
+      version: 2,
+      description: "Create playlists table",
+      sql: "CREATE TABLE IF NOT EXISTS playlists (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT, owner TEXT, created TEXT, modified TEXT, song_count INTEGER, duration INTEGER);",
+      kind: MigrationKind::Up,
     }];
 
     tauri::Builder::default()
