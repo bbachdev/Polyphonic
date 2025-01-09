@@ -3,7 +3,7 @@ use tauri::AppHandle;
 use crate::formatter::{generate_md5, generate_salt, get_library_hash, save_library_hash};
 use crate::models::{Library, LibraryConfig};
 use crate::music::sync_library;
-use crate::subsonic::{get_album_list, ping_server, stream};
+use crate::subsonic::{get_album_list, get_playlist_songs, ping_server, stream};
 
 #[tauri::command]
 pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
@@ -98,4 +98,18 @@ pub async fn get_recently_played(library: Library) -> Result<Vec<String>, String
         Err(e) => println!("Error: {}", e),
     }
     Ok(album_ids)
+}
+
+#[tauri::command]
+pub async fn get_songs_for_playlist(library: Library, playlist_id: String) -> Result<Vec<String>, String> {
+    let mut song_ids = vec![];
+    match get_playlist_songs(&library, &playlist_id).await {
+        Ok(song_list_response) => {
+            for song in song_list_response.data.playlist.entry {
+                song_ids.push(song.id);
+            }
+        }
+        Err(e) => println!("Error: {}", e),
+    }
+    Ok(song_ids)
 }

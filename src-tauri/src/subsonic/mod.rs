@@ -7,8 +7,7 @@ use reqwest::Client;
 use crate::formatter::create_connection_string;
 use crate::models::Library;
 use crate::responses::{
-    SubsonicBaseResponse, SubsonicGetAlbumList2Response, SubsonicGetAlbumsResponse,
-    SubsonicGetArtistsResponse, SubsonicGetSongsResponse, SubsonicResponse,
+    SubsonicBaseResponse, SubsonicGetAlbumList2Response, SubsonicGetAlbumsResponse, SubsonicGetArtistsResponse, SubsonicGetPlaylistResponse, SubsonicGetSongsResponse, SubsonicResponse
 };
 
 /* Ping
@@ -195,5 +194,21 @@ pub async fn get_album_list(
             Err(e) => Err(anyhow::anyhow!("Album Error: {}", e)),
         },
         Err(e) => Err(anyhow::anyhow!("Album Error: {}", e)),
+    }
+}
+
+/* getPlaylist */
+pub async fn get_playlist_songs(library: &Library, playlist_id: &str) -> Result<SubsonicResponse<SubsonicGetPlaylistResponse>, anyhow::Error> {
+    let mut url = create_connection_string(library, "getPlaylist");
+    url.push_str(&format!("&id={}", playlist_id));
+    match reqwest::get(&url).await {
+        Ok(res) => match res
+            .json::<SubsonicResponse<SubsonicGetPlaylistResponse>>()
+            .await
+        {
+            Ok(playlist_response) => Ok(playlist_response),
+            Err(e) => Err(anyhow::anyhow!("Song Error: {}", e)),
+        },
+        Err(e) => Err(anyhow::anyhow!("Song Error: {}", e)),
     }
 }

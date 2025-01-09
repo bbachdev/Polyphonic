@@ -135,3 +135,22 @@ pub struct SubsonicGetAlbumList2Response {
 pub struct SubsonicAlbumList {
     pub album: Vec<SubsonicAlbumID3>,
 }
+
+/*******************************************************************************
+ * Playlist
+ ******************************************************************************/
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SubsonicGetPlaylistResponse {
+  #[serde(flatten)]
+  pub base: SubsonicBaseResponse,
+  pub playlist: SubsonicPlaylistDetails,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SubsonicPlaylistDetails {
+  pub id: String,
+  pub entry: Vec<SubsonicChild>,
+}
