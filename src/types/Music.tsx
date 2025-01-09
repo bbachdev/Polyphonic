@@ -31,6 +31,7 @@ type Song = {
 
 type Playlist = {
   id: string;
+  library_id: string;
   name: string;
   owner: string;
   created: string;

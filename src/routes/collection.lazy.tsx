@@ -5,8 +5,8 @@ import PlaylistList from '@/components/collection/PlaylistList';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Config, Library } from '@/types/Config';
-import { Album, ListInfo, Queue, Song } from '@/types/Music';
-import { getAlbumsForArtist, getSongsForAlbum } from '@/util/db';
+import { Album, ListInfo, Playlist, Queue, Song } from '@/types/Music';
+import { getAlbumsForArtist, getSongsForAlbum, getSongsFromPlaylist } from '@/util/db';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { invoke } from '@tauri-apps/api/core';
 import { load } from '@tauri-apps/plugin-store';
@@ -37,9 +37,17 @@ function Collection() {
     }
   }
 
-  async function getPlaylistSongs(playlistId: string | undefined) {
-    console.log("Selected playlist", playlistId)
-    
+  async function getPlaylistSongs(playlist: Playlist | undefined) {
+    console.log("getPlaylistSongs", playlist)
+    if( playlist === undefined) {
+      setSongList([])
+    } else {
+      if(libraries.has(playlist.library_id)) {
+        console.log("Get Playlist songs", playlist.id)
+        const songs = await getSongsFromPlaylist(libraries.get(playlist.library_id)!, playlist.id)
+        setSongList(songs)
+      }
+    }
   }
 
   async function getAlbumSongs(album: Album | undefined) {
@@ -93,14 +101,28 @@ function Collection() {
             <PlaylistList onPlaylistSelected={getPlaylistSongs} onPlaylistClicked={() => setLeftView('artist')} />
           )}
         </ResizablePanel>
+        { leftView === 'artist' && (
+          <>
+            <ResizableHandle className={`dark:bg-slate-200`} />
+            <ResizablePanel defaultSize={58} minSize={30}>
+              <AlbumList libraries={libraries} parentAlbums={albumList} onAlbumSelected={getAlbumSongs} />
+            </ResizablePanel>
+          </>   
+        )}
         <ResizableHandle className={`dark:bg-slate-200`} />
-        <ResizablePanel defaultSize={58} minSize={30}>
-          <AlbumList libraries={libraries} parentAlbums={albumList} onAlbumSelected={getAlbumSongs} />
-        </ResizablePanel>
-        <ResizableHandle className={`dark:bg-slate-200`} />
-        <ResizablePanel defaultSize={22} minSize={20}>
-          <SongList nowPlayingId={nowPlayingId} songs={songList} listInfo={selectedListInfo} onSongPlay={playSong} />
-        </ResizablePanel>
+
+        { leftView === 'playlist' && (
+          <>
+            <ResizablePanel defaultSize={58} minSize={30}>
+            <SongList nowPlayingId={nowPlayingId} songs={songList} listInfo={selectedListInfo} onSongPlay={playSong} mode={'playlist'} />
+            </ResizablePanel>
+          </>
+        )}
+        { leftView === 'artist' && (
+          <ResizablePanel defaultSize={22} minSize={20}>
+            <SongList nowPlayingId={nowPlayingId} songs={songList} listInfo={selectedListInfo} onSongPlay={playSong} mode={'artist'} />
+          </ResizablePanel>
+        )}
       </ResizablePanelGroup>
       <NowPlaying newQueue={queue} libraries={libraries} onPlay={(song) => setNowPlayingId(song?.id)} />
     </div>

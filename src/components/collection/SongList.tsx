@@ -1,14 +1,16 @@
 import { ListInfo, Queue, Song } from '@/types/Music'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import CoverArt from '@/components/collection/CoverArt';
 
 interface SongListProps {
   songs: Song[],
   listInfo: ListInfo | undefined,
   nowPlayingId: string | undefined
   onSongPlay: (queue: Queue) => void
+  mode: 'artist' | 'playlist'
 }
 
-export default function SongList({ songs, listInfo, nowPlayingId, onSongPlay, }: SongListProps) {
+export default function SongList({ songs, listInfo, nowPlayingId, onSongPlay, mode}: SongListProps) {
   function playSong(songId: string) {
     let currentSong = songs.findIndex(s => s.id === songId)
     let newQueue: Queue = { songs: songs, current_song: currentSong }
@@ -26,8 +28,11 @@ export default function SongList({ songs, listInfo, nowPlayingId, onSongPlay, }:
       <ScrollArea className={`w-full`}>
         {songs.map((song, index) => (
           <div className={`p-2 cursor-pointer flex flex-row items-center ${song.id === nowPlayingId ? 'dark:bg-slate-700' : ''} dark:hover:bg-slate-700`} key={index} onClick={() => playSong(song.id)}>
-            { song.track !== 0 && (
+            { mode === 'artist' && song.track !== 0 && (
               <span className={`mr-2`}>{song.track.toLocaleString('en-US', { minimumIntegerDigits: 2 })}</span>
+            )}
+            { mode === 'playlist' && (
+              <CoverArt src={song.cover_art + '.png'} fallbackSrc={song.cover_art + '.jpg'} alt={song.title} className={`h-16 w-16`}></CoverArt>
             )}
             <div className={`flex flex-col`}>
               <p className={`px-1 font-semibold text-base line-clamp-1 break-all`}>{song.title}</p>

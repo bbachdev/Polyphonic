@@ -1,7 +1,8 @@
 import { Album, Artist, Playlist, Song } from "@/types/Music";
 import Database from "@tauri-apps/plugin-sql";
 import { appDataDir, join } from "@tauri-apps/api/path";
-import { convertFileSrc } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { Library } from '@/types/Config';
 
 async function getDb() {
   const db = await Database.load("sqlite:music.db");
@@ -28,7 +29,6 @@ export async function getAlbumsForArtist(artistId: string) {
       appDataDirPath,
       "/cover_art/" + albums[i].cover_art
     );
-    console.log("File path", filePath);
     const assetUrl = convertFileSrc(filePath);
     albums[i].cover_art = assetUrl;
   }
@@ -43,7 +43,6 @@ export async function getSongsForAlbum(albumId: string) {
     [albumId]
   );
   for (let i = 0; i < songs.length; i++) {
-    console.log("Song length", songs[i].duration)
     const filePath = await join(
       appDataDirPath,
       "/cover_art/" + songs[i].cover_art
@@ -62,9 +61,7 @@ export async function getAlbumsById(albumIds: string[]) {
     "SELECT id, name, artist_id, artist_name, cover_art, year, duration FROM albums WHERE id IN (" +
     albumIdsWithQuotes.join(",") +
     ")";
-  console.log("Album query", albumQuery);
   const albums = await db.select<Album[]>(albumQuery);
-  console.log("Query albums", albums);
   for (let i = 0; i < albums.length; i++) {
     const filePath = await join(
       appDataDirPath,
@@ -85,17 +82,39 @@ export async function getAlbumsById(albumIds: string[]) {
 export async function getPlaylists() {
   const db = await getDb();
   let playlistQuery =
-    "SELECT id, name, owner, created, modified, song_count, duration FROM playlists ORDER BY name COLLATE NOCASE ASC";
+    "SELECT id, library_id, name, owner, created, modified, song_count, duration FROM playlists ORDER BY name COLLATE NOCASE ASC";
   const playlists: Playlist[] = await db.select<Playlist[]>(playlistQuery);
   return playlists
 }
 
-export async function getSongsFromPlaylist(playlistId: string) {
+export async function getSongsFromPlaylist(library: Library, playlist_id: string) {
+  const appDataDirPath = await appDataDir();
   //Invoke, then get song data from DB
+  let song_ids = await invoke('get_songs_for_playlist', { library: library, playlistId: playlist_id }) as string[]
 
+  console.log("Song ids, ", song_ids)
+
+  let songIdsWithQuotes = song_ids.map((id) => `"${id}"`);
   const db = await getDb();
   let songQuery =
-    "SELECT id, title, artist_id, artist_name, album_id, album_name, track, disc_number, duration, content_type, cover_art FROM songs WHERE playlist_id = ? ORDER BY track ASC";
-  const songs: Song[] = await db.select<Song[]>(songQuery, [playlistId]);
+    "SELECT id, library_id, title, artist_id, artist_name, album_id, album_name, track, disc_number, duration, content_type, cover_art FROM songs WHERE id IN (" +
+    songIdsWithQuotes.join(",") +
+  ")";
+
+  const songs: Song[] = await db.select<Song[]>(songQuery, [playlist_id]);
+  for (let i = 0; i < songs.length; i++) {
+    const filePath = await join(
+      appDataDirPath,
+      "/cover_art/" + songs[i].cover_art
+    );
+    console.log("File path", filePath);
+    const assetUrl = convertFileSrc(filePath);
+    songs[i].cover_art = assetUrl;
+  }
+
+  //Sort songs
+  const ids = song_ids.reduce((map, id, i) => map.set(id, i), new Map());
+  songs.sort((a, b) => ids.get(a.id) - ids.get(b.id));
+
   return songs
 }

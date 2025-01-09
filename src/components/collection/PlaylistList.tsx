@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { HiSwitchHorizontal } from 'react-icons/hi'
 
 interface PlaylistListProps {
-  onPlaylistSelected: (playlistId: string | undefined) => void
+  onPlaylistSelected: (playlistId: Playlist | undefined) => void
   onPlaylistClicked: () => void
 }
 
@@ -21,16 +21,16 @@ export default function PlaylistList( {onPlaylistSelected, onPlaylistClicked}: P
     getPlaylistList()
   }, [])
 
-  function selectPlaylist(e: MouseEvent, playlistId: string) {
+  function selectPlaylist(e: MouseEvent, playlist: Playlist) {
     //Ctrl + click
     if (e.ctrlKey) {
       setSelectedPlaylist(undefined)
       setSelectedPlaylist(undefined)
     } else {
       //Regular click
-      if (selectedPlaylist?.id !== playlistId) {
-        setSelectedPlaylist(playlists.find(a => a.id === playlistId))
-        onPlaylistSelected(playlistId)
+      if (selectedPlaylist?.id !== playlist.id) {
+        setSelectedPlaylist(playlists.find(a => a.id === playlist.id))
+        onPlaylistSelected(playlist)
       }
     }
   }
@@ -47,7 +47,7 @@ export default function PlaylistList( {onPlaylistSelected, onPlaylistClicked}: P
       <ScrollArea className={`w-full`}>
         <ul>
           {playlists.map((playlist, index) => (
-            <li className={`p-2 cursor-pointer ${(playlist.id === selectedPlaylist?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectPlaylist(e, playlist.id)}>{playlist.name}</li>
+            <li className={`p-2 cursor-pointer ${(playlist.id === selectedPlaylist?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectPlaylist(e, playlist)}>{playlist.name}</li>
           ))}
         </ul>
 
