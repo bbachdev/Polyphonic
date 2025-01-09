@@ -82,11 +82,11 @@ function Collection() {
           <ArtistList onArtistSelected={getArtistAlbums} />
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
-        <ResizablePanel defaultSize={50} minSize={30}>
+        <ResizablePanel defaultSize={58} minSize={30}>
           <AlbumList libraries={libraries} parentAlbums={albumList} onAlbumSelected={getAlbumSongs} />
         </ResizablePanel>
         <ResizableHandle className={`dark:bg-slate-200`} />
-        <ResizablePanel defaultSize={30} minSize={20}>
+        <ResizablePanel defaultSize={22} minSize={20}>
           <SongList nowPlayingId={nowPlayingId} songs={songList} listInfo={selectedListInfo} onSongPlay={playSong} />
         </ResizablePanel>
       </ResizablePanelGroup>
