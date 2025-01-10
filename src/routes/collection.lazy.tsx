@@ -65,6 +65,11 @@ function Collection() {
     setQueue(newQueue)
   }
 
+  function toggleLeftView(view: 'artist' | 'playlist') {
+    setSongList([])
+    setLeftView(view)
+  }
+
   useEffect(() => {
     async function getLibraries() {
       invoke('get_libraries')
@@ -95,10 +100,10 @@ function Collection() {
       <ResizablePanelGroup direction='horizontal'>
         <ResizablePanel defaultSize={20} minSize={15}>
           { leftView === 'artist' && (
-            <ArtistList onArtistSelected={getArtistAlbums} onPlaylistClicked={() =>setLeftView('playlist')} />
+            <ArtistList onArtistSelected={getArtistAlbums} onPlaylistClicked={() =>toggleLeftView('playlist')} />
           )}
           { leftView === 'playlist' && (
-            <PlaylistList onPlaylistSelected={getPlaylistSongs} onPlaylistClicked={() => setLeftView('artist')} />
+            <PlaylistList onPlaylistSelected={getPlaylistSongs} onPlaylistClicked={() => toggleLeftView('artist')} />
           )}
         </ResizablePanel>
         { leftView === 'artist' && (

@@ -14,6 +14,8 @@ interface AlbumListProps {
 
 export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: AlbumListProps) {
   const [albums, setAlbums] = useState<Album[]>([])
+  //TODO: See if we prefer to cache for only x minutes, etc.
+  const [recentlyPlayed, setRecentlyPlayed] = useState<Album[]>([])
   const [selectedAlbum, setSelectedAlbum] = useState<Album | undefined>(undefined)
 
   async function getRecentlyPlayed() {
@@ -24,6 +26,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
       const recentlyPlayed = await invoke('get_recently_played', { library: libraries.values().next().value })
         .then(async (albumIds: any) => {
           const albumListAlbums = await getAlbumsById(albumIds as string[])
+          setRecentlyPlayed(albumListAlbums)
           setAlbums(albumListAlbums)
           console.log("Album ids", albumIds)
           return albumIds
@@ -43,7 +46,8 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
   useEffect(() => {
     async function updateAlbumList() {
       if(parentAlbums && parentAlbums.length === 0) {
-        getRecentlyPlayed()
+        //getRecentlyPlayed()
+        setAlbums(recentlyPlayed)
       }else {
         setAlbums(parentAlbums)
       }

@@ -66,6 +66,9 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
       setNowPlaying(song)
       onPlay(song)
 
+      audioRef.current.pause()
+      setPlaybackState(PlaybackState.Paused)
+
       //Reset seekbar
       if (progressRef.current) {
         progressRef.current.value = '0';
