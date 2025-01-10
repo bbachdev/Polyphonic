@@ -25,7 +25,7 @@ pub async fn insert_library(pool: &Pool<Sqlite>, library: &Library) -> Result<()
     let library_salt = &library.salt;
 
     sqlx::query(
-        "INSERT INTO libraries (id, name, host, port, username, salt) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT OR IGNORE INTO libraries (id, name, host, port, username, salt) VALUES (?, ?, ?, ?, ?, ?)",
     )
     .bind(library_id)
     .bind(library_name)
@@ -48,7 +48,7 @@ pub async fn insert_artists(
         let artist_name = &artist.name;
         let library_id = &artist.library_id;
 
-        sqlx::query("INSERT INTO artists (id, name, library_id) VALUES (?, ?, ?)")
+        sqlx::query("INSERT OR IGNORE INTO artists (id, name, library_id) VALUES (?, ?, ?)")
             .bind(artist_id)
             .bind(artist_name)
             .bind(library_id)
@@ -71,7 +71,7 @@ pub async fn insert_albums(pool: &Pool<Sqlite>, albums: &Vec<Album>) -> Result<(
         let album_duration = album.duration;
 
         sqlx::query(
-            "INSERT INTO albums (id, name, artist_id, artist_name, library_id, cover_art, year, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR IGNORE INTO albums (id, name, artist_id, artist_name, library_id, cover_art, year, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(album_id)
         .bind(album_name)
@@ -104,7 +104,7 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         let song_cover_art = &song.cover_art;
 
         sqlx::query(
-            "INSERT INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, disc_number, duration, content_type, cover_art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR IGNORE INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, disc_number, duration, content_type, cover_art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(song_id)
         .bind(song_title)
@@ -127,7 +127,7 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
 pub async fn insert_playlists(pool: &Pool<Sqlite>, playlists: &Vec<Playlist>) -> Result<(), anyhow::Error> {
     for playlist in playlists {
         sqlx::query(
-            "INSERT INTO playlists (id, library_id, name, owner, created, modified, song_count, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR IGNORE INTO playlists (id, library_id, name, owner, created, modified, song_count, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(playlist.id.clone())
         .bind(playlist.library_id.clone())

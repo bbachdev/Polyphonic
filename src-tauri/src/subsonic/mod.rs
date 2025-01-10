@@ -96,70 +96,73 @@ pub async fn get_album_art(
     client: Client,
     path: &String,
 ) -> Result<(), anyhow::Error> {
-    //TODO: Look into distinguishing .png and .jpg
-    match client.get(&url).send().await {
-        Ok(res) => match res.bytes().await {
-            Ok(buf) => {
-              let mut file_buffer = buf.clone();
-                let mut file_extension = "";
-                //Determine file type
-                let mut reader = ImageReader::new(Cursor::new(&buf));
-                match reader.with_guessed_format().unwrap().format() {
-                    Some(format) => {
-                        if format == ImageFormat::Jpeg {
-                            file_extension = ".jpg";
-                        } else if format == ImageFormat::Png {
-                            file_extension = ".png";
-                        } else if format == ImageFormat::Gif {
-                            file_extension = ".gif";
-                        } else if format == ImageFormat::WebP {
-                            file_extension = ".webp";
-                        }
-                    }
-                    None => {
-                        //Retry (TODO: Seems race-condition related. Can we limit futures instead?)
-                        match client.get(&url).send().await {
-                            Ok(res) => match res.bytes().await {
-                                Ok(retry_buf) => {
-                                  file_buffer = retry_buf.clone();
-                                  reader = ImageReader::new(Cursor::new(&retry_buf));
-                                  match reader.with_guessed_format().unwrap().format() {
-                                      Some(format) => {
-                                          if format == ImageFormat::Jpeg {
-                                              file_extension = ".jpg";
-                                          } else if format == ImageFormat::Png {
-                                              file_extension = ".png";
-                                          } else if format == ImageFormat::Gif {
-                                              file_extension = ".gif";
-                                          } else if format == ImageFormat::WebP {
-                                              file_extension = ".webp";
-                                          }
-                                      }
-                                      None => {
-                                          //Default to png
-                                          file_extension = ".png"
-                                      }
-                                  }
-                                },
-                                Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
-                            }, 
-                            Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
-                        }
-                    }
-                }
+    if !Path::new(format!("{}/cover_art/{}{}", path, cover_id, ".png")).exists() && !Path::new(format!("{}/cover_art/{}{}", path, cover_id, ".jpg")).exists() {
+      match client.get(&url).send().await {
+          Ok(res) => match res.bytes().await {
+              Ok(buf) => {
+                let mut file_buffer = buf.clone();
+                  let mut file_extension = "";
+                  //Determine file type
+                  let mut reader = ImageReader::new(Cursor::new(&buf));
+                  match reader.with_guessed_format().unwrap().format() {
+                      Some(format) => {
+                          if format == ImageFormat::Jpeg {
+                              file_extension = ".jpg";
+                          } else if format == ImageFormat::Png {
+                              file_extension = ".png";
+                          } else if format == ImageFormat::Gif {
+                              file_extension = ".gif";
+                          } else if format == ImageFormat::WebP {
+                              file_extension = ".webp";
+                          }
+                      }
+                      None => {
+                          //Retry (TODO: Seems race-condition related. Can we limit futures instead?)
+                          match client.get(&url).send().await {
+                              Ok(res) => match res.bytes().await {
+                                  Ok(retry_buf) => {
+                                    file_buffer = retry_buf.clone();
+                                    reader = ImageReader::new(Cursor::new(&retry_buf));
+                                    match reader.with_guessed_format().unwrap().format() {
+                                        Some(format) => {
+                                            if format == ImageFormat::Jpeg {
+                                                file_extension = ".jpg";
+                                            } else if format == ImageFormat::Png {
+                                                file_extension = ".png";
+                                            } else if format == ImageFormat::Gif {
+                                                file_extension = ".gif";
+                                            } else if format == ImageFormat::WebP {
+                                                file_extension = ".webp";
+                                            }
+                                        }
+                                        None => {
+                                            //Default to png
+                                            file_extension = ".png"
+                                        }
+                                    }
+                                  },
+                                  Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
+                              }, 
+                              Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
+                          }
+                      }
+                  }
 
-                //Save file
-                let mut file =
-                    File::create(format!("{}/cover_art/{}{}", path, cover_id, file_extension))?;
-                match file.write_all(&file_buffer) {
-                    Ok(_) => Ok(()),
-                    Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
-                }
-            }
-            Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
-        },
-        Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
+                  //Save file
+                  let mut file =
+                      File::create(format!("{}/cover_art/{}{}", path, cover_id, file_extension))?;
+                  match file.write_all(&file_buffer) {
+                      Ok(_) => Ok(()),
+                      Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
+                  }
+              }
+              Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
+          },
+          Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
+      }
     }
+    Ok(())
+    
 }
 
 /* getPlaylists */
