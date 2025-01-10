@@ -139,6 +139,31 @@ pub struct SubsonicAlbumList {
 /*******************************************************************************
  * Playlist
  ******************************************************************************/
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SubsonicGetPlaylistsResponse {
+  #[serde(flatten)]
+  pub base: SubsonicBaseResponse,
+  pub playlists: SubsonicPlaylistContainer,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SubsonicPlaylistContainer {
+  pub playlist: Vec<SubsonicPlaylist>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SubsonicPlaylist {
+    pub id: String,
+    pub name: String,
+    pub owner: String,
+    pub created: String,
+    pub modified: String,
+    pub song_count: Option<u32>,
+    pub duration: Option<u32>,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

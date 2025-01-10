@@ -66,3 +66,15 @@ pub struct Song {
     pub content_type: String,
     pub cover_art: String,
 }
+
+#[derive(Serialize, Deserialize, Debug, FromRow)]
+pub struct Playlist {
+    pub id: String,
+    pub library_id: String,
+    pub name: String,
+    pub owner: String,
+    pub created: String,
+    pub modified: String,
+    pub song_count: u32,
+    pub duration: u32,
+}

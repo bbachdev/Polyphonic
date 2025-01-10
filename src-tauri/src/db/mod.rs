@@ -3,7 +3,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::{
     formatter::get_library_hash,
-    models::{Album, Artist, DBLibrary, Library, Song},
+    models::{Album, Artist, DBLibrary, Library, Playlist, Song},
 };
 
 pub async fn db_connect(app_handle: &AppHandle) -> Result<Pool<Sqlite>, anyhow::Error> {
@@ -118,6 +118,25 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>) -> Result<(), 
         .bind(song_duration)
         .bind(song_content_type)
         .bind(song_cover_art)
+        .execute(pool)
+        .await?;
+    }
+    Ok(())
+}
+
+pub async fn insert_playlists(pool: &Pool<Sqlite>, playlists: &Vec<Playlist>) -> Result<(), anyhow::Error> {
+    for playlist in playlists {
+        sqlx::query(
+            "INSERT INTO playlists (id, library_id, name, owner, created, modified, song_count, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(playlist.id.clone())
+        .bind(playlist.library_id.clone())
+        .bind(playlist.name.clone())
+        .bind(playlist.owner.clone())
+        .bind(playlist.created.clone())
+        .bind(playlist.modified.clone())
+        .bind(playlist.song_count)
+        .bind(playlist.duration)
         .execute(pool)
         .await?;
     }

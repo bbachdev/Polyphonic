@@ -1,11 +1,11 @@
 use std::{fs, path::Path};
 
 use crate::{
-    db::{db_connect, insert_albums, insert_artists, insert_library, insert_songs},
+    db::{db_connect, insert_albums, insert_artists, insert_library, insert_playlists, insert_songs},
     formatter::create_connection_string,
-    models::{Album, Artist, Library, Song},
-    responses::{SubsonicAlbumID3, SubsonicChild, SubsonicGetArtistsResponse, SubsonicResponse},
-    subsonic::{get_album_art, get_albums_for_artist, get_artists, get_songs_for_album},
+    models::{Album, Artist, Library, Playlist, Song},
+    responses::{SubsonicAlbumID3, SubsonicChild, SubsonicGetArtistsResponse, SubsonicPlaylist, SubsonicResponse},
+    subsonic::{get_album_art, get_albums_for_artist, get_artists, get_playlists, get_songs_for_album},
 };
 use futures::future::join_all;
 use tauri::{AppHandle, Manager};
@@ -19,6 +19,8 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     let songs: Vec<SubsonicChild> = get_songs(&albums, library).await?;
     println!("Get Cover Art");
     get_cover_art(&albums, library, app_handle).await?;
+    println!("Get Playlists");
+    let playlists: Vec<SubsonicPlaylist> = get_playlists(library).await?;
 
     println!("Insert Library");
     let pool = db_connect(app_handle).await?;
@@ -31,6 +33,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     let mut transformed_artists: Vec<Artist> = vec![];
     let mut transformed_albums: Vec<Album> = vec![];
     let mut transformed_songs: Vec<Song> = vec![];
+    let mut transformed_playlists: Vec<Playlist> = vec![];
 
     println!("Transform");
     for artist in &artists.data.artists.index {
@@ -76,6 +79,20 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
         transformed_songs.push(song);
     }
 
+    for playlist in &playlists {
+        let playlist = Playlist {
+            id: playlist.id.clone(),
+            library_id: library.id.clone(),
+            name: playlist.name.clone(),
+            owner: playlist.owner.clone(),
+            created: playlist.created.clone(),
+            modified: playlist.modified.clone(),
+            song_count: playlist.song_count.unwrap_or(0),
+            duration: playlist.duration.unwrap_or(0),
+        };
+        transformed_playlists.push(playlist);
+    }
+
     //Write to DB
     println!("Insert Artists");
     match insert_artists(&pool, &transformed_artists).await {
@@ -90,6 +107,11 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     println!("Insert Songs");
     match insert_songs(&pool, &transformed_songs).await {
         Ok(_) => println!("Songs inserted"),
+        Err(e) => println!("Error: {}", e),
+    }
+    println!("Insert Playlists");
+    match insert_playlists(&pool, &transformed_playlists).await {
+        Ok(_) => println!("Playlists inserted"),
         Err(e) => println!("Error: {}", e),
     }
 
