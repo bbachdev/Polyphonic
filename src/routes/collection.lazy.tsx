@@ -4,6 +4,7 @@ import NowPlaying from '@/components/collection/NowPlaying';
 import PlaylistList from '@/components/collection/PlaylistList';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import Spinner from '@/components/ui/spinner';
 import { Config, Library } from '@/types/Config';
 import { Album, ListInfo, Playlist, Queue, Song } from '@/types/Music';
 import { getAlbumsForArtist, getSongsForAlbum, getSongsFromPlaylist } from '@/util/db';
@@ -25,6 +26,7 @@ function Collection() {
   const [nowPlayingId, setNowPlayingId] = useState<string | undefined>(undefined)
   const [selectedListInfo, setSelectedListInfo] = useState<ListInfo | undefined>(undefined)
   const [leftView, setLeftView] = useState<'artist' | 'playlist'>('artist')
+  const [isScanning, setIsScanning] = useState<boolean>(false)
 
   async function getArtistAlbums(artistId: string | undefined) {
     console.log("Selected artist", artistId)
@@ -97,6 +99,12 @@ function Collection() {
           <button><FaGear className={`h-8 w-8`} /></button>
         </div>
       </div>
+      { isScanning && (
+        <div className={`w-full py-1 flex flex-row items-center justify-center gap-2 bg-slate-900`}>
+          <Spinner size={16} className={`mt-1`} />
+          <span>Syncing Collection...</span>
+        </div>
+      )}
       <ResizablePanelGroup direction='horizontal'>
         <ResizablePanel defaultSize={20} minSize={15}>
           { leftView === 'artist' && (

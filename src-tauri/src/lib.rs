@@ -24,7 +24,14 @@ pub fn run() {
       description: "Create playlists table",
       sql: "CREATE TABLE IF NOT EXISTS playlists (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT, owner TEXT, created TEXT, modified TEXT, song_count INTEGER, duration INTEGER);",
       kind: MigrationKind::Up,
-    }];
+    },
+    Migration {
+      version: 3,
+      description: "Add last_scanned column to libraries",
+      sql: "ALTER TABLE libraries ADD COLUMN last_scanned TEXT;",
+      kind: MigrationKind::Up,
+    },
+    ];
 
     tauri::Builder::default()
         .plugin(tauri_plugin_sql::Builder::new().build())
