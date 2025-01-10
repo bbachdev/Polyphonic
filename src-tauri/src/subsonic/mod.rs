@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{Cursor, Write};
+use std::path::Path;
 
 use image::{ImageFormat, ImageReader};
 use reqwest::Client;
@@ -96,8 +97,8 @@ pub async fn get_album_art(
     client: Client,
     path: &String,
 ) -> Result<(), anyhow::Error> {
-    if !Path::new(format!("{}/cover_art/{}{}", path, cover_id, ".png")).exists() && !Path::new(format!("{}/cover_art/{}{}", path, cover_id, ".jpg")).exists() {
-      match client.get(&url).send().await {
+  if !Path::new(&format!("{}/cover_art/{}{}", path, cover_id, ".png")).exists() && !Path::new(&format!("{}/cover_art/{}{}", path, cover_id, ".jpg")).exists() {
+    match client.get(&url).send().await {
           Ok(res) => match res.bytes().await {
               Ok(buf) => {
                 let mut file_buffer = buf.clone();
@@ -160,9 +161,9 @@ pub async fn get_album_art(
           },
           Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
       }
-    }
+  } else {
     Ok(())
-    
+  }
 }
 
 /* getPlaylists */
