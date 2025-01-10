@@ -23,7 +23,7 @@ type Song = {
   library_id: string;
   track: number;
   duration: number;
-  discNumber: number;
+  disc_number: number;
   path: string;
   content_type: string;
   cover_art: string;
@@ -52,3 +52,10 @@ type ListInfo = {
 }
 
 export type { Artist, Album, Song, Queue, Playlist, ListInfo }
+
+export function song_sort(a: Song, b: Song) {
+  if (a.disc_number !== b.disc_number) {
+    return a.disc_number - b.disc_number;
+  }
+  return a.track - b.track;
+}

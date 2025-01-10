@@ -1,4 +1,4 @@
-import { Album, Artist, Playlist, Song } from "@/types/Music";
+import { Album, Artist, Playlist, Song, song_sort } from "@/types/Music";
 import Database from "@tauri-apps/plugin-sql";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
@@ -50,6 +50,10 @@ export async function getSongsForAlbum(albumId: string) {
     const assetUrl = convertFileSrc(filePath);
     songs[i].cover_art = assetUrl;
   }
+
+  //Sort by disc number
+  songs.sort(song_sort);
+
   return songs;
 }
 
