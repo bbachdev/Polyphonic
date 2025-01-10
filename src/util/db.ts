@@ -67,7 +67,6 @@ export async function getAlbumsById(albumIds: string[]) {
       appDataDirPath,
       "/cover_art/" + albums[i].cover_art
     );
-    console.log("File path", filePath);
     const assetUrl = convertFileSrc(filePath);
     albums[i].cover_art = assetUrl;
   }
@@ -92,8 +91,6 @@ export async function getSongsFromPlaylist(library: Library, playlist_id: string
   //Invoke, then get song data from DB
   let song_ids = await invoke('get_songs_for_playlist', { library: library, playlistId: playlist_id }) as string[]
 
-  console.log("Song ids, ", song_ids)
-
   let songIdsWithQuotes = song_ids.map((id) => `"${id}"`);
   const db = await getDb();
   let songQuery =
@@ -107,7 +104,6 @@ export async function getSongsFromPlaylist(library: Library, playlist_id: string
       appDataDirPath,
       "/cover_art/" + songs[i].cover_art
     );
-    console.log("File path", filePath);
     const assetUrl = convertFileSrc(filePath);
     songs[i].cover_art = assetUrl;
   }

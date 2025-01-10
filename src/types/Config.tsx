@@ -21,4 +21,5 @@ export interface Library {
   username: string;
   hashed_password?: string;
   salt: string;
+  last_scanned?: string;
 }

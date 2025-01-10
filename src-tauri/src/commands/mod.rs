@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use tauri::AppHandle;
 
 use crate::formatter::{generate_md5, generate_salt, get_library_hash, save_library_hash};
@@ -11,6 +13,11 @@ pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
     let salt = generate_salt();
     let hashed_password = generate_md5(&library.password, &salt);
 
+    //Get current time in milliseconds (for last_scanned)
+    //Note: Could potentially move this slightly later (but would need to modify structs)
+    let start = SystemTime::now();
+    let since_the_epoch = start.duration_since(UNIX_EPOCH);
+
     //Create regular library struct
     let mut library = Library {
         id: library.id,
@@ -20,6 +27,7 @@ pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
         username: library.username,
         hashed_password,
         salt,
+        last_scanned: since_the_epoch.unwrap().as_millis().to_string(),
     };
 
     match ping_server(&library).await {

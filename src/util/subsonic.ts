@@ -29,3 +29,17 @@ export async function scrobble(
 
   return data["subsonic-response"].status === "ok";
 }
+
+export async function library_modified(library: Library): Promise<boolean> {
+  let host = library.host + (library.port !== -1 ? `:${library.port}` : "");
+  let connectionString = `${host}/rest/getIndexes.view?ifModifiedSince=${library.last_scanned}&u=${library.username}&t=${library.hashed_password}&s=${library.salt}&v=1.16.1&c=tauri&f=json`;
+
+  const res = await fetch(connectionString);
+  const data = await res.json();
+
+  let indexData = data["subsonic-response"].indexes;
+
+  console.log("Index data", indexData)
+
+  return indexData.hasOwnProperty("index");
+}

@@ -147,7 +147,7 @@ pub async fn get_libraries(app_handle: &AppHandle) -> Result<Vec<Library>, anyho
     let mut libraries_with_hash: Vec<Library> = Vec::new();
     let db = db_connect(app_handle).await?;
     let libraries = sqlx::query_as::<_, DBLibrary>(
-        "SELECT id, name, host, port, username, salt FROM libraries ORDER BY id COLLATE NOCASE ASC",
+        "SELECT id, name, host, port, username, salt, last_scanned FROM libraries ORDER BY id COLLATE NOCASE ASC",
     )
     .fetch_all(&db)
     .await?;
@@ -161,6 +161,7 @@ pub async fn get_libraries(app_handle: &AppHandle) -> Result<Vec<Library>, anyho
             username: library.username,
             hashed_password: "".to_string(),
             salt: library.salt,
+            last_scanned: library.last_scanned,
         };
         match get_library_hash(&real_library) {
             Ok(hashed_password) => {

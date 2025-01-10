@@ -19,6 +19,7 @@ pub struct DBLibrary {
     pub port: Option<i16>,
     pub username: String,
     pub salt: String,
+    pub last_scanned: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -30,6 +31,7 @@ pub struct Library {
     pub username: String,
     pub hashed_password: String,
     pub salt: String,
+    pub last_scanned: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, FromRow)]

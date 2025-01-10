@@ -8,6 +8,7 @@ import Spinner from '@/components/ui/spinner';
 import { Config, Library } from '@/types/Config';
 import { Album, ListInfo, Playlist, Queue, Song } from '@/types/Music';
 import { getAlbumsForArtist, getSongsForAlbum, getSongsFromPlaylist } from '@/util/db';
+import { library_modified } from '@/util/subsonic';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { invoke } from '@tauri-apps/api/core';
 import { load } from '@tauri-apps/plugin-store';
@@ -29,7 +30,6 @@ function Collection() {
   const [isScanning, setIsScanning] = useState<boolean>(false)
 
   async function getArtistAlbums(artistId: string | undefined) {
-    console.log("Selected artist", artistId)
     if (artistId === undefined) {
       //TODO: Grab default list
       setAlbumList([])
@@ -40,12 +40,10 @@ function Collection() {
   }
 
   async function getPlaylistSongs(playlist: Playlist | undefined) {
-    console.log("getPlaylistSongs", playlist)
     if( playlist === undefined) {
       setSongList([])
     } else {
       if(libraries.has(playlist.library_id)) {
-        console.log("Get Playlist songs", playlist.id)
         const songs = await getSongsFromPlaylist(libraries.get(playlist.library_id)!, playlist.id)
         setSongList(songs)
       }
@@ -63,7 +61,6 @@ function Collection() {
   }
 
   async function playSong(newQueue: Queue) {
-    console.log("Play song", newQueue)
     setQueue(newQueue)
   }
 
@@ -75,13 +72,25 @@ function Collection() {
   useEffect(() => {
     async function getLibraries() {
       invoke('get_libraries')
-        .then((libraries: any) => {
+        .then(async (libraries: any) => {
           const library_data: Library[] = libraries as Library[]
           const libraryMap = new Map<String, Library>()
           library_data.forEach(library => {
             libraryMap.set(library.id, library)
           })
           setLibraries(libraryMap)
+
+          //Check if we need to sync
+          //TODO: Support multiple libraries
+          if (library_data.length > 0) {
+            if(await library_modified(library_data[0]) == true) {
+              console.log("Library modified")
+            }else{
+              console.log("Library not modified")
+            }
+          }
+
+
         }).catch(() => {
           console.log("Failed to get libraries")
         })
