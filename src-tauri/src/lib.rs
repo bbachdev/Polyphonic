@@ -49,6 +49,7 @@ pub fn run() {
             commands::get_libraries,
             commands::get_recently_played,
             commands::get_songs_for_playlist,
+            commands::update_library_modified,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

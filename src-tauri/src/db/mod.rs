@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Manager};
 
@@ -23,9 +25,12 @@ pub async fn insert_library(pool: &Pool<Sqlite>, library: &Library) -> Result<()
     let library_port = library.port.unwrap_or(-1);
     let library_username = &library.username;
     let library_salt = &library.salt;
+    let start = SystemTime::now();
+    let since_the_epoch = start.duration_since(UNIX_EPOCH);
+    let library_last_scanned = since_the_epoch.unwrap().as_millis().to_string();
 
     sqlx::query(
-        "INSERT OR IGNORE INTO libraries (id, name, host, port, username, salt) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT OR IGNORE INTO libraries (id, name, host, port, username, salt, last_scanned) VALUES (?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(library_id)
     .bind(library_name)
@@ -33,6 +38,7 @@ pub async fn insert_library(pool: &Pool<Sqlite>, library: &Library) -> Result<()
     .bind(library_port)
     .bind(library_username)
     .bind(library_salt)
+    .bind(library_last_scanned)
     .execute(pool)
     .await?;
     Ok(())

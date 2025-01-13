@@ -160,7 +160,7 @@ pub struct SubsonicPlaylist {
     pub name: String,
     pub owner: String,
     pub created: String,
-    pub modified: String,
+    pub changed: String,
     pub song_count: Option<u32>,
     pub duration: Option<u32>,
 }

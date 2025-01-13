@@ -86,7 +86,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
             name: playlist.name.clone(),
             owner: playlist.owner.clone(),
             created: playlist.created.clone(),
-            modified: playlist.modified.clone(),
+            modified: playlist.changed.clone(),
             song_count: playlist.song_count.unwrap_or(0),
             duration: playlist.duration.unwrap_or(0),
         };

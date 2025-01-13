@@ -1,7 +1,10 @@
+use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use sqlx::pool;
 use tauri::AppHandle;
 
+use crate::db::db_connect;
 use crate::formatter::{generate_md5, generate_salt, get_library_hash, save_library_hash};
 use crate::models::{Library, LibraryConfig};
 use crate::music::sync_library;
@@ -120,4 +123,23 @@ pub async fn get_songs_for_playlist(library: Library, playlist_id: String) -> Re
         Err(e) => println!("Error: {}", e),
     }
     Ok(song_ids)
+}
+
+#[tauri::command]
+pub async fn update_library_modified(app_handle: AppHandle, data: HashMap<String, String>) -> Result<bool, String> {
+  let pool = db_connect(&app_handle).await.unwrap();
+  for (key, value) in data {
+    println!("{}: {}", key, value);
+    match sqlx::query(
+      "UPDATE libraries SET last_scanned = (?) WHERE id = (?)",
+    )
+    .bind(value)
+    .bind(key)
+    .execute(&pool)
+    .await {
+      Ok(_) => {},
+      Err(e) => println!("Error: {}", e),
+    }
+  }
+  Ok(true)
 }

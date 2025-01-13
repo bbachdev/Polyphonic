@@ -81,22 +81,21 @@ function Collection() {
           setLibraries(libraryMap)
 
           //Check if we need to sync
-          //TODO: Support multiple libraries
           if (library_data.length > 0) {
-            if(await library_modified(library_data[0]) == true) {
+            if(await library_modified(library_data) === true) {
               setIsScanning(true)
               await invoke('sync_collection', { libraries: library_data })
                 .then(() => {
                   console.log("Synced")
                   setIsScanning(false)
-                }).catch(() => {
+                }).catch((e) => {
+                  console.log("==Error: ", e)
                   console.log("Failed to sync")
                 })
             }else{
               console.log("Library not modified")
             }
           }
-
 
         }).catch(() => {
           console.log("Failed to get libraries")
