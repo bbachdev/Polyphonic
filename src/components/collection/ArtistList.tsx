@@ -44,7 +44,7 @@ export default function ArtistList({ onArtistSelected, onPlaylistClicked }: Arti
         </button>
       </div>
       
-      <ScrollArea className={`w-full`}>
+      <ScrollArea className={`w-full overflow-hidden`}>
         <ul>
           {artists.map((artist, index) => (
             <li className={`p-2 cursor-pointer ${(artist.id === selectedArtist?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectArtist(e, artist.id)}>{artist.name}</li>

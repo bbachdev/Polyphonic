@@ -5,13 +5,12 @@ import PlaylistList from '@/components/collection/PlaylistList';
 import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import Spinner from '@/components/ui/spinner';
-import { Config, Library } from '@/types/Config';
+import { Library } from '@/types/Config';
 import { Album, ListInfo, Playlist, Queue, Song } from '@/types/Music';
 import { getAlbumsForArtist, getSongsForAlbum, getSongsFromPlaylist } from '@/util/db';
 import { library_modified } from '@/util/subsonic';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { invoke } from '@tauri-apps/api/core';
-import { load } from '@tauri-apps/plugin-store';
 import { useEffect, useState } from 'react';
 import { FaGear } from "react-icons/fa6";
 

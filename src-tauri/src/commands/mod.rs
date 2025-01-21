@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use sqlx::pool;
 use tauri::AppHandle;
 
 use crate::db::db_connect;

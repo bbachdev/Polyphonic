@@ -26,7 +26,7 @@ export default function SongList({ songs, listInfo, nowPlayingId, onSongPlay, mo
           <p className={`text-base`}>{listInfo.author}</p>
         </div>
       )}
-      <ScrollArea className={`w-full`}>
+      <ScrollArea className={`w-full overflow-hidden`}>
         {songs.map((song, index) => (
           <>
           {songs[index-1] && song.disc_number !== songs[index-1].disc_number && (

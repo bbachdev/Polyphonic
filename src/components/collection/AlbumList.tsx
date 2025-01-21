@@ -73,7 +73,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
   return (
     <div className={`w-full h-full flex flex-col`}>
       <h1 className={`p-2`}>Album List</h1>
-      <ScrollArea className={`w-full`}>
+      <ScrollArea className={`w-full overflow-hidden`}>
         <div className={`albumGrid text-center`}>
           {albums.map((album, index) => (
             <div className={`p-2 cursor-pointer ${(album.id === selectedAlbum?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectAlbum(e, album.id)}>

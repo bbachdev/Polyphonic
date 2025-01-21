@@ -6,23 +6,23 @@ import { useEffect, useState } from 'react';
 interface QueueListProps {
   queue: Queue | undefined
   onQueueItemClick: (queue_index: number) => void
-  onQueueChange: (queue: Queue) => void
+  // onQueueChange: (queue: Queue) => void
 }
 
-export default function QueueList({ queue, onQueueItemClick, onQueueChange }: QueueListProps) {
+export default function QueueList({ queue, onQueueItemClick }: QueueListProps) {
   const [queueState, setQueueState] = useState<Queue | undefined>(undefined)
 
   useEffect(() => {
     setQueueState(queue)
   }, [queue])
 
-  function queueAdjusted(queue: Queue) {
-    if (queue.current_song === queue.songs.length - 1) {
-      return { ...queue, current_song: 0 }
-    } else {
-      return { ...queue, current_song: queue.current_song + 1 }
-    }
-  }
+  // function queueAdjusted(queue: Queue) {
+  //   if (queue.current_song === queue.songs.length - 1) {
+  //     return { ...queue, current_song: 0 }
+  //   } else {
+  //     return { ...queue, current_song: queue.current_song + 1 }
+  //   }
+  // }
 
   function deleteQueueItem(index: number) {
     if (queueState) {

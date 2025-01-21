@@ -7,7 +7,6 @@ import { BiSolidPlaylist } from "react-icons/bi";
 import { MdSkipNext, MdSkipPrevious } from "react-icons/md";
 import CoverArt from '@/components/collection/CoverArt';
 import Spinner from '@/components/ui/spinner';
-import QueueList from './QueueList';
 
 //Make default lower volume for better UX
 const DEFAULT_VOLUME = 65;
@@ -251,15 +250,14 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
   }
 
   /* Queue-Related */
-  function queueItemClicked(index: number) {
+  //function queueItemClicked(index: number) {
     //Find song in queue
-    loadSong(queue.songs[index])
-  }
+    //loadSong(queue.songs[index])
+  //}
 
-  function adjustQueue(newQueue: Queue) {
-    //TODO: Make sure load isn't re-triggered
+  //function adjustQueue(newQueue: Queue) {
     //setQueue(newQueue)
-  }
+  //}
 
   return (
     <>

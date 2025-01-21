@@ -35,6 +35,11 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     let mut transformed_songs: Vec<Song> = vec![];
     let mut transformed_playlists: Vec<Playlist> = vec![];
 
+    let mut album_ids: Vec<String> = vec![];
+    let mut song_ids: Vec<String> = vec![];
+    let mut artist_ids: Vec<String> = vec![];
+    let mut playlist_ids: Vec<String> = vec![];
+
     println!("Transform");
     for artist in &artists.data.artists.index {
         for artist_detail in &artist.artist {
@@ -43,9 +48,11 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
                 name: artist_detail.name.clone(),
                 library_id: library.id.clone(),
             };
+            artist_ids.push(artist.id.clone());
             transformed_artists.push(artist);
         }
     }
+
 
     for album in &albums {
         let album = Album {
@@ -58,6 +65,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
             year: album.year,
             duration: album.duration,
         };
+        album_ids.push(album.id.clone());
         transformed_albums.push(album);
     }
 
@@ -76,6 +84,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
             content_type: song.content_type.clone(),
             cover_art: song.cover_art.clone().unwrap_or("".to_string()),
         };
+        song_ids.push(song.id.clone());
         transformed_songs.push(song);
     }
 
@@ -90,27 +99,28 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
             song_count: playlist.song_count.unwrap_or(0),
             duration: playlist.duration.unwrap_or(0),
         };
+        playlist_ids.push(playlist.id.clone());
         transformed_playlists.push(playlist);
     }
 
     //Write to DB
     println!("Insert Artists");
-    match insert_artists(&pool, &transformed_artists).await {
+    match insert_artists(&pool, &transformed_artists, &artist_ids).await {
         Ok(_) => println!("Artists inserted"),
         Err(e) => println!("Error: {}", e),
     }
     println!("Insert Albums");
-    match insert_albums(&pool, &transformed_albums).await {
+    match insert_albums(&pool, &transformed_albums, &album_ids).await {
         Ok(_) => println!("Albums inserted"),
         Err(e) => println!("Error: {}", e),
     }
     println!("Insert Songs");
-    match insert_songs(&pool, &transformed_songs).await {
+    match insert_songs(&pool, &transformed_songs, &song_ids).await {
         Ok(_) => println!("Songs inserted"),
         Err(e) => println!("Error: {}", e),
     }
     println!("Insert Playlists");
-    match insert_playlists(&pool, &transformed_playlists).await {
+    match insert_playlists(&pool, &transformed_playlists, &playlist_ids).await {
         Ok(_) => println!("Playlists inserted"),
         Err(e) => println!("Error: {}", e),
     }

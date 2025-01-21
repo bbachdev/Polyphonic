@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "polyphonic",
+        "title": "Polyphonic",
         "width": 1920,
         "height": 1080
       }
@@ -25,7 +25,8 @@
           "**/*"
         ]
       },
-      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost"
+      "dangerousDisableAssetCspModification": ["style-src"],
+      "csp": null
     }
   },
   "bundle": {

@@ -1,6 +1,5 @@
 import { Library } from "@/types/Config";
 import { Song } from "@/types/Music";
-import { invoke } from '@tauri-apps/api/core';
 
 export async function stream(
   song: Song,
