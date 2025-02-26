@@ -7,6 +7,7 @@ import { MdSkipNext, MdSkipPrevious } from "react-icons/md";
 import CoverArt from '@/components/collection/CoverArt';
 import Spinner from '@/components/ui/spinner';
 import QueueContext from '@/contexts/QueueContext';
+import QueueList from './QueueList';
 
 //Make default lower volume for better UX
 const DEFAULT_VOLUME = 65;
@@ -164,6 +165,7 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
         setPlaybackState(PlaybackState.Stopped)
         return
       } else {
+        console.log("Current Queue: ", queue)
         let nextSong = currentSong! + 1
         setCurrentSong(nextSong)
         await loadSong(queue[nextSong], nextSong)
@@ -242,6 +244,10 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
     }
   }
 
+  function queueItemClicked(song: Song, index: number) {
+    loadSong(song, index)
+  }
+
   /* Queue-Related */
   //function queueItemClicked(index: number) {
     //Find song in queue
@@ -311,6 +317,7 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
               <div className={'flex'}>
                 <input ref={volumeRef} type="range" defaultValue={volume} min={0} max={100} step={1} onChange={(e) => changeVolume(Number(e.target.value))} onInput={() => updateProgress(volumeRef)} />
               </div>
+              <QueueList nowPlayingId={nowPlaying?.id} onPlaySong={queueItemClicked} />
             </div>
           </div>
         </div>
