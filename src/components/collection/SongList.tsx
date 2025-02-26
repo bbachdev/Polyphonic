@@ -13,7 +13,7 @@ interface SongListProps {
 }
 
 export default function SongList({ songs, listInfo, nowPlayingId, mode}: SongListProps) {
-  const { setQueue, setCurrentSong } = useContext(QueueContext)
+  const { setQueue, setCurrentSong, setQueueOrigin } = useContext(QueueContext)
 
   function playSong(songId: string) {
 
@@ -21,6 +21,7 @@ export default function SongList({ songs, listInfo, nowPlayingId, mode}: SongLis
     console.log("Current song: ", currentSong)
     setQueue(songs)
     setCurrentSong(currentSong)
+    setQueueOrigin(Date.now())
   }
 
   return (

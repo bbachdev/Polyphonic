@@ -26,7 +26,7 @@ interface NowPlayingProps {
 }
 
 export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
-  const { queue, currentSong, setCurrentSong } = useContext(QueueContext)
+  const { queue, currentSong, setCurrentSong, queueOrigin } = useContext(QueueContext)
   const [nowPlaying, setNowPlaying] = useState<Song | undefined>(undefined)
   const [playbackState, setPlaybackState] = useState<PlaybackState>(PlaybackState.Stopped)
 
@@ -45,19 +45,16 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
   const [cachedSongData, setCachedSongData] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
-    console.log("Queue changed: ", queue)
     async function getSongData() {
       if (currentSong !== undefined && currentSong !== -1) {
-        console.log("Current song: ", queue[currentSong!])
-        await loadSong(queue[currentSong])
+        await loadSong(queue[currentSong], currentSong)
       }
     }
     getSongData()
-  }, [queue, currentSong])
+  }, [queueOrigin])
 
-  async function loadSong(song: Song) {
+  async function loadSong(song: Song, indexToPlay: number) {
     if (song !== undefined && audioRef.current !== null) {
-      console.log("Loading song: ", song)
 
       setNowPlaying(song)
       onPlay(song)
@@ -73,8 +70,8 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
 
       //If song is cached, play it
       let audioData, songDataMap
-      if (cachedSongData.has(queue[currentSong!].id)) {
-        audioData = cachedSongData.get(queue[currentSong!].id)!
+      if (cachedSongData.has(queue[indexToPlay!].id)) {
+        audioData = cachedSongData.get(queue[indexToPlay!].id)!
         songDataMap = cachedSongData
       } else {
         setPlaybackState(PlaybackState.Loading)
@@ -89,7 +86,6 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
 
       audioRef.current.src = audioData
       audioRef.current.load()
-      console.log("Song", song)
       let secondsDate = new Date(0)
       secondsDate.setSeconds(song.duration)
       var timestring = secondsDate.toISOString().slice(11, 19).replace(/^0+:(0+)?/, '')
@@ -104,12 +100,12 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
       songDataMap = new Map<string, string>()
 
       //Grab previous if possible
-      if (currentSong && currentSong !== 0) {
-        let previousTwo = currentSong - 2
+      if (indexToPlay && indexToPlay !== 0) {
+        let previousTwo = indexToPlay - 2
         if (previousTwo < 0) {
           previousTwo = 0
         }
-        for (let i = previousTwo; i <= currentSong; i++) {
+        for (let i = previousTwo; i <= indexToPlay; i++) {
           if (cachedSongData.has(queue[i].id)) {
             continue
           }
@@ -124,12 +120,12 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
       }
 
       //Grab next if possible
-      if (currentSong && currentSong !== queue.length - 1) {
-        let nextTwo = currentSong + 2
+      if (indexToPlay && indexToPlay !== queue.length - 1) {
+        let nextTwo = indexToPlay + 2
         if (nextTwo > queue.length - 1) {
           nextTwo = queue.length - 1
         }
-        for (let i = currentSong + 1; i <= nextTwo; i++) {
+        for (let i = indexToPlay + 1; i <= nextTwo; i++) {
           if (cachedSongData.has(queue[i].id)) {
             continue
           }
@@ -163,26 +159,26 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
   }
 
   async function nextSong() {
-    console.log("Next song")
     if (audioRef.current) {
       if (currentSong && currentSong === queue.length - 1) {
         setPlaybackState(PlaybackState.Stopped)
         return
       } else {
-        console.log("Set queue")
-        setCurrentSong(currentSong! + 1)
+        let nextSong = currentSong! + 1
+        setCurrentSong(nextSong)
+        await loadSong(queue[nextSong], nextSong)
       }
     }
   }
 
   async function previousSong() {
-    console.log("Previous song")
     if (audioRef.current) {
       if (currentSong === 0) {
         return
       } else {
-        console.log("Set queue")
-        setCurrentSong(currentSong! - 1)
+        let previousSong = currentSong! - 1
+        setCurrentSong(previousSong)
+        await loadSong(queue[previousSong], previousSong)
       }
     }
   }
@@ -224,12 +220,13 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
   const updateTime = () => {
     if (!audioRef.current || !progressRef.current) return;
     const { currentTime, duration } = audioRef.current;
-    const progressPercent = (currentTime / duration) * 100;
-    progressRef.current.value = progressPercent.toString();
-    progressRef.current.style.background = `linear-gradient(to right, ${PROGRESS_COLOR} ${progressRef.current.value}%, #ccc ${progressRef.current.value}%)`;
-
-    //Update time strings
-    setCurrentTime(`${Math.floor(currentTime / 60)}:${String(Math.floor(currentTime % 60)).padStart(2, '0')}`);
+    if(!isNaN(duration)) {
+      const progressPercent = (currentTime / duration) * 100;
+      progressRef.current.value = progressPercent.toString();
+      progressRef.current.style.background = `linear-gradient(to right, ${PROGRESS_COLOR} ${progressRef.current.value}%, #ccc ${progressRef.current.value}%)`;
+      //Update time strings
+      setCurrentTime(`${Math.floor(currentTime / 60)}:${String(Math.floor(currentTime % 60)).padStart(2, '0')}`);
+    }
   }
 
   const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -288,8 +285,8 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
               <button onClick={previousSong} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
                 <MdSkipPrevious className={`h-10 w-10`} />
               </button>
-              {playbackState === PlaybackState.Playing && (
-                <button onClick={pause} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
+              {(playbackState === PlaybackState.Playing || playbackState === PlaybackState.Loading) && (
+                <button onClick={pause} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`} disabled={playbackState === PlaybackState.Loading}>
                   <FaPauseCircle className={`h-10 w-10`} />
                 </button>
               )}
