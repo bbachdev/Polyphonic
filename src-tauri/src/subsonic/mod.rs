@@ -40,7 +40,6 @@ pub async fn get_artists(
     library: &Library,
 ) -> Result<SubsonicResponse<SubsonicGetArtistsResponse>, anyhow::Error> {
     let url = create_connection_string(library, "getArtists");
-    println!("{}", url);
     match reqwest::get(&url).await {
         Ok(res) => match res
             .json::<SubsonicResponse<SubsonicGetArtistsResponse>>()

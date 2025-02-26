@@ -13,13 +13,13 @@ export default function CoverArt({ className = '', src, fallbackSrc, alt, style 
 
   const handleImageError = (e: SyntheticEvent<HTMLImageElement, Event>) => {
     e.preventDefault();
-    console.log("Error loading image", e);
+    //console.log("Error loading image", e);
     setImageSrc(fallbackSrc);
     return true
   };
 
   useEffect(() => {
-    console.log("Loading image", src);
+    //console.log("Loading image", src);
     setImageSrc(src);
   }, [src]);
 

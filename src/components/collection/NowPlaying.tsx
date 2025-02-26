@@ -3,11 +3,9 @@ import { Queue, Song } from '@/types/Music'
 import { scrobble, stream } from '@/util/subsonic';
 import { RefObject, useEffect, useRef, useState } from 'react';
 import { FaPlayCircle, FaPauseCircle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
-import { BiSolidPlaylist } from "react-icons/bi";
 import { MdSkipNext, MdSkipPrevious } from "react-icons/md";
 import CoverArt from '@/components/collection/CoverArt';
 import Spinner from '@/components/ui/spinner';
-import QueueList from '@/components/collection/QueueList';
 
 //Make default lower volume for better UX
 const DEFAULT_VOLUME = 65;
@@ -191,59 +189,6 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
     }
   }
 
-  async function queueItemClicked(queue_index: number) {
-    setQueue({ ...queue, current_song: queue_index })
-  }
-
-  async function adjustQueue(newQueue: Queue) {
-    setQueue(newQueue)
-    //TODO: See if we can reduce code duplication
-
-    let songDataMap = cachedSongData
-
-    //Grab previous if possible
-    if (queue.current_song !== 0) {
-      let previousTwo = queue.current_song - 2
-      if (previousTwo < 0) {
-        previousTwo = 0
-      }
-      for (let i = previousTwo; i <= queue.current_song; i++) {
-        if (cachedSongData.has(queue.songs[i].id)) {
-          continue
-        }
-        let song = queue.songs[i]
-        let audioData = await stream(song, libraries.get(song.library_id)!)
-        if (audioData === undefined) {
-          console.log("Failed to stream song")
-          return
-        }
-        songDataMap.set(song.id, audioData)
-      }
-    }
-
-    //Grab next if possible
-    if (queue.current_song !== queue.songs.length - 1) {
-      let nextTwo = queue.current_song + 2
-      if (nextTwo > queue.songs.length - 1) {
-        nextTwo = queue.songs.length - 1
-      }
-      for (let i = queue.current_song + 1; i <= nextTwo; i++) {
-        if (cachedSongData.has(queue.songs[i].id)) {
-          continue
-        }
-        let song = queue.songs[i]
-        let audioData = await stream(song, libraries.get(song.library_id)!)
-        if (audioData === undefined) {
-          console.log("Failed to stream song")
-          return
-        }
-        songDataMap.set(song.id, audioData)
-      }
-    }
-
-    setCachedSongData(songDataMap)
-  }
-
   /* Volume Related */
   const changeVolume = (newLevel: number) => {
     if (!audioRef.current) return;
@@ -371,7 +316,6 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
               <div className={'flex'}>
                 <input ref={volumeRef} type="range" defaultValue={volume} min={0} max={100} step={1} onChange={(e) => changeVolume(Number(e.target.value))} onInput={() => updateProgress(volumeRef)} />
               </div>
-              <QueueList queue={queue} onQueueItemClick={queueItemClicked} onQueueChange={adjustQueue} />
             </div>
           </div>
         </div>
