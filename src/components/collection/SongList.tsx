@@ -1,21 +1,26 @@
-import { ListInfo, Queue, Song } from '@/types/Music'
+import { ListInfo, Song } from '@/types/Music'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { FaCompactDisc } from "react-icons/fa";
 import CoverArt from '@/components/collection/CoverArt';
+import QueueContext from '@/contexts/QueueContext';
+import { useContext } from 'react';
 
 interface SongListProps {
   songs: Song[],
   listInfo: ListInfo | undefined,
   nowPlayingId: string | undefined
-  onSongPlay: (queue: Queue) => void
   mode: 'artist' | 'playlist'
 }
 
-export default function SongList({ songs, listInfo, nowPlayingId, onSongPlay, mode}: SongListProps) {
+export default function SongList({ songs, listInfo, nowPlayingId, mode}: SongListProps) {
+  const { setQueue, setCurrentSong } = useContext(QueueContext)
+
   function playSong(songId: string) {
+
     let currentSong = songs.findIndex(s => s.id === songId)
-    let newQueue: Queue = { songs: songs, current_song: currentSong }
-    onSongPlay(newQueue)
+    console.log("Current song: ", currentSong)
+    setQueue(songs)
+    setCurrentSong(currentSong)
   }
 
   return (

@@ -1,11 +1,12 @@
 import { Library } from '@/types/Config';
-import { Queue, Song } from '@/types/Music'
+import { Song } from '@/types/Music'
 import { scrobble, stream } from '@/util/subsonic';
-import { RefObject, useEffect, useRef, useState } from 'react';
+import { RefObject, useContext, useEffect, useRef, useState } from 'react';
 import { FaPlayCircle, FaPauseCircle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { MdSkipNext, MdSkipPrevious } from "react-icons/md";
 import CoverArt from '@/components/collection/CoverArt';
 import Spinner from '@/components/ui/spinner';
+import QueueContext from '@/contexts/QueueContext';
 
 //Make default lower volume for better UX
 const DEFAULT_VOLUME = 65;
@@ -20,13 +21,12 @@ enum PlaybackState {
 }
 
 interface NowPlayingProps {
-  newQueue: Queue,
   libraries: Map<String, Library>
   onPlay: (song: Song | undefined) => void
 }
 
-export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingProps) {
-  const [queue, setQueue] = useState<Queue>(newQueue)
+export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
+  const { queue, currentSong, setCurrentSong } = useContext(QueueContext)
   const [nowPlaying, setNowPlaying] = useState<Song | undefined>(undefined)
   const [playbackState, setPlaybackState] = useState<PlaybackState>(PlaybackState.Stopped)
 
@@ -45,21 +45,19 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
   const [cachedSongData, setCachedSongData] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
-    setQueue(newQueue)
-  }, [newQueue])
-
-  useEffect(() => {
     console.log("Queue changed: ", queue)
     async function getSongData() {
-      if (queue.current_song !== -1) {
-        await loadSong(queue.songs[queue.current_song])
+      if (currentSong !== undefined && currentSong !== -1) {
+        console.log("Current song: ", queue[currentSong!])
+        await loadSong(queue[currentSong])
       }
     }
     getSongData()
-  }, [queue])
+  }, [queue, currentSong])
 
   async function loadSong(song: Song) {
     if (song !== undefined && audioRef.current !== null) {
+      console.log("Loading song: ", song)
 
       setNowPlaying(song)
       onPlay(song)
@@ -75,8 +73,8 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
 
       //If song is cached, play it
       let audioData, songDataMap
-      if (cachedSongData.has(queue.songs[queue.current_song].id)) {
-        audioData = cachedSongData.get(queue.songs[queue.current_song].id)!
+      if (cachedSongData.has(queue[currentSong!].id)) {
+        audioData = cachedSongData.get(queue[currentSong!].id)!
         songDataMap = cachedSongData
       } else {
         setPlaybackState(PlaybackState.Loading)
@@ -106,16 +104,16 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
       songDataMap = new Map<string, string>()
 
       //Grab previous if possible
-      if (queue.current_song !== 0) {
-        let previousTwo = queue.current_song - 2
+      if (currentSong && currentSong !== 0) {
+        let previousTwo = currentSong - 2
         if (previousTwo < 0) {
           previousTwo = 0
         }
-        for (let i = previousTwo; i <= queue.current_song; i++) {
-          if (cachedSongData.has(queue.songs[i].id)) {
+        for (let i = previousTwo; i <= currentSong; i++) {
+          if (cachedSongData.has(queue[i].id)) {
             continue
           }
-          let song = queue.songs[i]
+          let song = queue[i]
           let audioData = await stream(song, libraries.get(song.library_id)!)
           if (audioData === undefined) {
             console.log("Failed to stream song")
@@ -126,16 +124,16 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
       }
 
       //Grab next if possible
-      if (queue.current_song !== queue.songs.length - 1) {
-        let nextTwo = queue.current_song + 2
-        if (nextTwo > queue.songs.length - 1) {
-          nextTwo = queue.songs.length - 1
+      if (currentSong && currentSong !== queue.length - 1) {
+        let nextTwo = currentSong + 2
+        if (nextTwo > queue.length - 1) {
+          nextTwo = queue.length - 1
         }
-        for (let i = queue.current_song + 1; i <= nextTwo; i++) {
-          if (cachedSongData.has(queue.songs[i].id)) {
+        for (let i = currentSong + 1; i <= nextTwo; i++) {
+          if (cachedSongData.has(queue[i].id)) {
             continue
           }
-          let song = queue.songs[i]
+          let song = queue[i]
           let audioData = await stream(song, libraries.get(song.library_id)!)
           if (audioData === undefined) {
             console.log("Failed to stream song")
@@ -167,12 +165,12 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
   async function nextSong() {
     console.log("Next song")
     if (audioRef.current) {
-      if (queue.current_song === queue.songs.length - 1) {
+      if (currentSong && currentSong === queue.length - 1) {
         setPlaybackState(PlaybackState.Stopped)
         return
       } else {
         console.log("Set queue")
-        setQueue({ ...queue, current_song: queue.current_song + 1 })
+        setCurrentSong(currentSong! + 1)
       }
     }
   }
@@ -180,11 +178,11 @@ export default function NowPlaying({ newQueue, libraries, onPlay }: NowPlayingPr
   async function previousSong() {
     console.log("Previous song")
     if (audioRef.current) {
-      if (queue.current_song === 0) {
+      if (currentSong === 0) {
         return
       } else {
         console.log("Set queue")
-        setQueue({ ...queue, current_song: queue.current_song - 1 })
+        setCurrentSong(currentSong! - 1)
       }
     }
   }

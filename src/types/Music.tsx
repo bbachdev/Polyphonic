@@ -40,18 +40,13 @@ type Playlist = {
   duration: number;
 }
 
-type Queue = {
-  songs: Song[];
-  current_song: number;
-}
-
 //Could be album, or playlist
 type ListInfo = {
   title: string;
   author: string;
 }
 
-export type { Artist, Album, Song, Queue, Playlist, ListInfo }
+export type { Artist, Album, Song, Playlist, ListInfo }
 
 export function song_sort(a: Song, b: Song) {
   if (a.disc_number !== b.disc_number) {

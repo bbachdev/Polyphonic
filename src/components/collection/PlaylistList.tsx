@@ -25,7 +25,6 @@ export default function PlaylistList( {onPlaylistSelected, onPlaylistClicked}: P
     //Ctrl + click
     if (e.ctrlKey) {
       setSelectedPlaylist(undefined)
-      setSelectedPlaylist(undefined)
     } else {
       //Regular click
       if (selectedPlaylist?.id !== playlist.id) {
