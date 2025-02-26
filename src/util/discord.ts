@@ -1,0 +1,1 @@
+const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID
