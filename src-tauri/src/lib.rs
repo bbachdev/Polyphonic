@@ -10,27 +10,35 @@ mod subsonic;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let migrations = vec![Migration {
-      version: 1,
-      description: "Create initial tables",
-      sql: "CREATE TABLE IF NOT EXISTS libraries (id TEXT PRIMARY KEY, name TEXT, host TEXT, port INTEGER, username TEXT, salt TEXT);
-      CREATE TABLE IF NOT EXISTS artists (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT);
-      CREATE TABLE IF NOT EXISTS albums (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT, artist_id TEXT REFERENCES artists(id), artist_name TEXT, cover_art TEXT, year INTEGER, duration INTEGER);
-      CREATE TABLE IF NOT EXISTS songs (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), title TEXT, artist_id TEXT, artist_name TEXT, album_id TEXT, album_name TEXT, track INTEGER, disc_number INTEGER, year INTEGER, duration INTEGER, content_type TEXT, cover_art TEXT);",
-      kind: MigrationKind::Up,
-    },
-    Migration {
-      version: 2,
-      description: "Create playlists table",
-      sql: "CREATE TABLE IF NOT EXISTS playlists (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT, owner TEXT, created TEXT, modified TEXT, song_count INTEGER, duration INTEGER);",
-      kind: MigrationKind::Up,
-    },
-    Migration {
-      version: 3,
-      description: "Add last_scanned column to libraries",
-      sql: "ALTER TABLE libraries ADD COLUMN last_scanned TEXT;",
-      kind: MigrationKind::Up,
-    },
+    let migrations = vec![
+        Migration {
+        version: 1,
+        description: "Create initial tables",
+        sql: "CREATE TABLE IF NOT EXISTS libraries (id TEXT PRIMARY KEY, name TEXT, host TEXT, port INTEGER, username TEXT, salt TEXT);
+        CREATE TABLE IF NOT EXISTS artists (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT);
+        CREATE TABLE IF NOT EXISTS albums (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT, artist_id TEXT REFERENCES artists(id), artist_name TEXT, cover_art TEXT, year INTEGER, duration INTEGER);
+        CREATE TABLE IF NOT EXISTS songs (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), title TEXT, artist_id TEXT, artist_name TEXT, album_id TEXT, album_name TEXT, track INTEGER, disc_number INTEGER, year INTEGER, duration INTEGER, content_type TEXT, cover_art TEXT);",
+        kind: MigrationKind::Up,
+      },
+      Migration {
+        version: 2,
+        description: "Create playlists table",
+        sql: "CREATE TABLE IF NOT EXISTS playlists (id TEXT PRIMARY KEY, library_id TEXT REFERENCES libraries(id), name TEXT, owner TEXT, created TEXT, modified TEXT, song_count INTEGER, duration INTEGER);",
+        kind: MigrationKind::Up,
+      },
+      Migration {
+        version: 3,
+        description: "Add last_scanned column to libraries",
+        sql: "ALTER TABLE libraries ADD COLUMN last_scanned TEXT;",
+        kind: MigrationKind::Up,
+      },
+      Migration {
+        version: 4,
+        description: "Add tags table and album_tags table",
+        sql: "CREATE TABLE IF NOT EXISTS tags (id TEXT PRIMARY KEY, name TEXT, description TEXT);
+        CREATE TABLE IF NOT EXISTS album_tags (id TEXT PRIMARY KEY, tag_id TEXT REFERENCES tags(id), album_id TEXT REFERENCES albums(id));",
+        kind: MigrationKind::Up,
+      },
     ];
 
     tauri::Builder::default()

@@ -1,8 +1,8 @@
 import { Artist } from '@/types/Music'
-import { getArtists } from '@/util/db'
-import { MouseEvent, useEffect, useState } from 'react'
+import { MouseEvent, useState } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { HiSwitchHorizontal } from "react-icons/hi";
+import { useArtists } from '@/hooks/query/useArtists';
 
 interface ArtistListProps {
   onArtistSelected: (artistId: string | undefined) => void
@@ -10,16 +10,9 @@ interface ArtistListProps {
 }
 
 export default function ArtistList({ onArtistSelected, onPlaylistClicked }: ArtistListProps) {
-  const [artists, setArtists] = useState<Artist[]>([])
   const [selectedArtist, setSelectedArtist] = useState<Artist | undefined>(undefined)
 
-  useEffect(() => {
-    async function getArtistList() {
-      const artists = await getArtists()
-      setArtists(artists)
-    }
-    getArtistList()
-  }, [])
+  const { data: artists, isSuccess: isArtistsSuccess } = useArtists()
 
   function selectArtist(e: MouseEvent, artistId: string) {
     //Ctrl + click
@@ -29,8 +22,10 @@ export default function ArtistList({ onArtistSelected, onPlaylistClicked }: Arti
     } else {
       //Regular click
       if (selectedArtist?.id !== artistId) {
-        setSelectedArtist(artists.find(a => a.id === artistId))
-        onArtistSelected(artistId)
+        if(isArtistsSuccess) {
+          setSelectedArtist(artists.find(a => a.id === artistId))
+          onArtistSelected(artistId)
+        }
       }
     }
   }
@@ -46,7 +41,7 @@ export default function ArtistList({ onArtistSelected, onPlaylistClicked }: Arti
       
       <ScrollArea className={`w-full overflow-hidden`}>
         <ul>
-          {artists.map((artist, index) => (
+          {isArtistsSuccess && artists.map((artist, index) => (
             <li className={`p-2 cursor-pointer ${(artist.id === selectedArtist?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectArtist(e, artist.id)}>{artist.name}</li>
           ))}
         </ul>

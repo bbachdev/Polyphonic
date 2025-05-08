@@ -80,3 +80,17 @@ pub struct Playlist {
     pub song_count: u32,
     pub duration: u32,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Tag {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AlbumTag {
+    pub id: String,
+    pub tag_id: String,
+    pub album_id: String,
+}

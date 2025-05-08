@@ -40,13 +40,21 @@ type Playlist = {
   duration: number;
 }
 
+type Tag = {
+  id: string;
+  name: string;
+  description: string;
+}
+
 //Could be album, or playlist
 type ListInfo = {
   title: string;
   author: string;
 }
 
-export type { Artist, Album, Song, Playlist, ListInfo }
+type ListView = 'artist' | 'playlist' | 'tag'
+
+export type { Artist, Album, Song, Playlist, ListInfo, ListView, Tag }
 
 export function song_sort(a: Song, b: Song) {
   if (a.disc_number !== b.disc_number) {

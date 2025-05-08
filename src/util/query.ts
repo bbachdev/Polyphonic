@@ -1,0 +1,11 @@
+export const QUERY_KEY_ARTISTS = 'artists'
+export const QUERY_KEY_ALBUMS = 'albums'
+export const QUERY_ARTIST_ALBUMS = 'artist_albums'
+export const QUERY_KEY_SONGS = 'album_songs'
+export const QUERY_KEY_PLAYLIST_SONGS = 'playlist_songs'
+export const QUERY_KEY_PLAYLISTS = 'playlists'
+export const QUERY_KEY_TAGS = 'tags'
+export const QUERY_KEY_TAGGED_ALBUMS = 'tagged_albums'
+
+export const QUERY_KEY_MOST_RECENTLY_PLAYED = 'most_recently_played'
+export const QUERY_KEY_MOST_RECENTLY_ADDED = 'most_recently_added'

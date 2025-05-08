@@ -6,8 +6,8 @@ import SongList from '@/components/collection/SongList';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import Spinner from '@/components/ui/spinner';
 import { Library } from '@/types/Config';
-import { Album, ListInfo, Playlist, Song } from '@/types/Music';
-import { getAlbumsForArtist, getSongsForAlbum, getSongsFromPlaylist } from '@/util/db';
+import { Album, ListInfo, ListView, Playlist, Song } from '@/types/Music';
+import { getAlbumsByTag, getAlbumsForArtist, getSongsForAlbum, getSongsFromPlaylist } from '@/util/db';
 import { library_modified } from '@/util/subsonic';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { invoke } from '@tauri-apps/api/core';
@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import { FaGear } from "react-icons/fa6";
 
 import { QueueContextProvider } from '@/contexts/QueueContext';
+import TagList from '@/components/collection/TagList';
 
 export const Route = createLazyFileRoute('/collection')({
   component: Collection,
@@ -27,7 +28,7 @@ function Collection() {
   //const [queue, setQueue] = useState<Queue>({ songs: [], current_song: -1 })
   const [nowPlayingId, setNowPlayingId] = useState<string | undefined>(undefined)
   const [selectedListInfo, setSelectedListInfo] = useState<ListInfo | undefined>(undefined)
-  const [leftView, setLeftView] = useState<'artist' | 'playlist'>('artist')
+  const [leftView, setLeftView] = useState<ListView>('artist')
   const [isScanning, setIsScanning] = useState<boolean>(false)
 
   async function getArtistAlbums(artistId: string | undefined) {
@@ -36,6 +37,15 @@ function Collection() {
       setAlbumList([])
     } else {
       const albums = await getAlbumsForArtist(artistId)
+      setAlbumList(albums)
+    }
+  }
+
+  async function getTagAlbums(tagId: string | undefined) {
+    if (tagId === undefined) {
+      setAlbumList([])
+    } else {
+      const albums = await getAlbumsByTag(tagId)
       setAlbumList(albums)
     }
   }
@@ -61,7 +71,7 @@ function Collection() {
     }
   }
 
-  function toggleLeftView(view: 'artist' | 'playlist') {
+  function toggleLeftView(view: ListView) {
     setSongList([])
     setLeftView(view)
   }
@@ -124,10 +134,13 @@ function Collection() {
               <ArtistList onArtistSelected={getArtistAlbums} onPlaylistClicked={() =>toggleLeftView('playlist')} />
             )}
             { leftView === 'playlist' && (
-              <PlaylistList onPlaylistSelected={getPlaylistSongs} onPlaylistClicked={() => toggleLeftView('artist')} />
+              <PlaylistList onPlaylistSelected={getPlaylistSongs} onTagClicked={() => toggleLeftView('tag')} />
+            )}
+            { leftView === 'tag' && (
+              <TagList onTagSelected={getTagAlbums} onArtistClicked={() => toggleLeftView('artist')} />
             )}
           </ResizablePanel>
-          { leftView === 'artist' && (
+          { (leftView === 'artist' || leftView === 'tag') && (
             <>
               <ResizableHandle className={`dark:bg-slate-200`} />
               <ResizablePanel defaultSize={58} minSize={30}>
@@ -144,7 +157,7 @@ function Collection() {
               </ResizablePanel>
             </>
           )}
-          { leftView === 'artist' && (
+          { (leftView === 'artist' || leftView === 'tag') && (
             <ResizablePanel defaultSize={22} minSize={20}>
               <SongList nowPlayingId={nowPlayingId} songs={songList} listInfo={selectedListInfo} mode={'artist'} />
             </ResizablePanel>

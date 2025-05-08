@@ -1,4 +1,4 @@
-import { Album, Artist, Playlist, Song, song_sort } from "@/types/Music";
+import { Album, Artist, Playlist, Song, song_sort, Tag } from "@/types/Music";
 import Database from "@tauri-apps/plugin-sql";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
@@ -88,6 +88,31 @@ export async function getPlaylists() {
     "SELECT id, library_id, name, owner, created, modified, song_count, duration FROM playlists ORDER BY name COLLATE NOCASE ASC";
   const playlists: Playlist[] = await db.select<Playlist[]>(playlistQuery);
   return playlists
+}
+
+export async function getTags() {
+  const db = await getDb();
+  let tagQuery = "SELECT id, name, description FROM tags ORDER BY name COLLATE NOCASE ASC";
+  const tags: Tag[] = await db.select<Tag[]>(tagQuery);
+  return tags;
+}
+
+export async function getAlbumsByTag(tagId: string) {
+  const appDataDirPath = await appDataDir();
+  const db = await getDb();
+  const albums = await db.select<Album[]>(
+    "SELECT id, name, artist_id, artist_name, cover_art, year, duration FROM albums WHERE id IN (SELECT album_id FROM album_tags WHERE tag_id = ?) ORDER BY year DESC",
+    [tagId]
+  );
+  for (let i = 0; i < albums.length; i++) {
+    const filePath = await join(
+      appDataDirPath,
+      "/cover_art/" + albums[i].cover_art
+    );
+    const assetUrl = convertFileSrc(filePath);
+    albums[i].cover_art = assetUrl;
+  }
+  return albums;
 }
 
 export async function getSongsFromPlaylist(library: Library, playlist_id: string) {
