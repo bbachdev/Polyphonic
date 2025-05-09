@@ -25,7 +25,7 @@ export default function Settings({ onBackClicked }: SettingsProps) {
     <div className={`w-full flex flex-col`}>
       <div className={`flex flex-row p-4 items-center border-b-2 border-slate-800 dark:border-slate-200`}>
         <button className={`flex flex-row items-center gap-2`} onClick={onBackClicked}>
-          <IoArrowBackCircleSharp size={36} /> <span className={`text-xl`}>Back</span>
+          <IoArrowBackCircleSharp size={40} /> <span className={`text-xl`}>Back</span>
         </button>
       </div>
       <div className={`p-4`}>
@@ -35,7 +35,7 @@ export default function Settings({ onBackClicked }: SettingsProps) {
           { libraries && libraries.size > 0 && (
             <div className={`flex flex-col`}>
               { Array.from(libraries.values()).map((library) => (
-                <div className={`flex flex-col`}>
+                <div className={`flex flex-col`} key={library.id}>
                   <span className={`text-xl`}>{library.name}</span>
                   <span className={`text-sm`}>{`${library.username} - ${library.host}`}</span>
                 </div>

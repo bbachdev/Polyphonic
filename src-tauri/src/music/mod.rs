@@ -7,7 +7,7 @@ use crate::{
     responses::{SubsonicAlbumID3, SubsonicChild, SubsonicGetArtistsResponse, SubsonicPlaylist, SubsonicResponse},
     subsonic::{get_album_art, get_albums_for_artist, get_artists, get_playlists, get_songs_for_album},
 };
-use futures::future::join_all;
+use futures::{future::join_all, StreamExt};
 use tauri::{AppHandle, Manager};
 
 pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(), anyhow::Error> {
@@ -219,6 +219,10 @@ async fn get_cover_art(
             &data_dir_string,
         ));
     }
-    join_all(futures).await;
+    //join_all(futures).await;
+
+    let stream = futures::stream::iter(futures).buffer_unordered(10);
+    stream.collect::<Vec<_>>().await;
+
     Ok(())
 }
