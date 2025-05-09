@@ -1,7 +1,8 @@
 use std::collections::HashMap;
+use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::db::db_connect;
 use crate::formatter::{generate_md5, generate_salt, get_library_hash, save_library_hash};
@@ -140,5 +141,16 @@ pub async fn update_library_modified(app_handle: AppHandle, data: HashMap<String
       Err(e) => println!("Error: {}", e),
     }
   }
+  Ok(true)
+}
+
+#[tauri::command]
+pub async fn clear_cover_art_cache(app_handle: AppHandle) -> Result<bool, String> {
+  let binding = app_handle.path().app_config_dir().unwrap();
+  let app_data_dir = binding.to_str().unwrap();
+  let data_dir_string = app_data_dir.to_string();
+
+  let cover_art_path = format!("{}/cover_art", data_dir_string);
+  fs::remove_dir_all(cover_art_path).unwrap();
   Ok(true)
 }

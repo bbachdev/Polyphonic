@@ -4,8 +4,6 @@ import { Album } from '@/types/Music'
 import { useState, MouseEvent, useEffect } from 'react'
 import CoverArt from './CoverArt'
 import { Library } from '@/types/Config'
-import { invoke } from '@tauri-apps/api/core'
-import { getAlbumsById } from '@/util/db'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -21,7 +19,6 @@ interface AlbumListProps {
 
 export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: AlbumListProps) {
   const [albums, setAlbums] = useState<Album[]>([])
-  //TODO: See if we prefer to cache for only x minutes, etc.
   const [selectedAlbum, setSelectedAlbum] = useState<Album | undefined>(undefined)
 
   //Tag-related
@@ -29,7 +26,6 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
   const [tagDialogOpen, setTagDialogOpen] = useState(false)
 
   const { data: recentlyPlayed, isSuccess: isRecentlyPlayedSuccess, isLoading: isRecentlyPlayedLoading } = useRecentAlbums(libraries)
-
 
   useEffect(() => {
     setAlbums(recentlyPlayed || [])
@@ -127,6 +123,5 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
         <TagDialog albumId={albumContext} onClose={closeTagDialog} />
       </DialogContent>
     </Dialog>
-    
   )
 }

@@ -58,6 +58,7 @@ pub fn run() {
             commands::get_recently_played,
             commands::get_songs_for_playlist,
             commands::update_library_modified,
+            commands::clear_cover_art_cache,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

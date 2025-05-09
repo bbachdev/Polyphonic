@@ -143,3 +143,13 @@ export async function getSongsFromPlaylist(library: Library, playlist_id: string
 
   return songs
 }
+
+export async function resyncCollection() {
+  const db = await getDb();
+  await db.execute("DELETE FROM albums");
+  await db.execute("DELETE FROM artists");
+  await db.execute("DELETE FROM playlists");
+  await db.execute("DELETE FROM songs");
+  await db.execute("DELETE FROM tags");
+  await db.execute("DELETE FROM album_tags");
+}

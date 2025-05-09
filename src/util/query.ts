@@ -1,3 +1,4 @@
+export const QUERY_KEY_LIBRARIES = 'libraries'
 export const QUERY_KEY_ARTISTS = 'artists'
 export const QUERY_KEY_ALBUMS = 'albums'
 export const QUERY_ARTIST_ALBUMS = 'artist_albums'
