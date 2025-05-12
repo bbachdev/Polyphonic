@@ -74,12 +74,12 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected, vi
 
   //TODO: Play album
   function playAlbumContext(albumId: string) {
-    console.log("Playing album context")
+    console.log("Playing album context: " + albumId)
   }
 
   //TODO: Add to queue
   function addToQueueContext(albumId: string) {
-    console.log("Adding to queue context")
+    console.log("Adding to queue context: " + albumId)
   }
 
   if(isRecentlyPlayedLoading) {

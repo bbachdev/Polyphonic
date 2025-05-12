@@ -42,7 +42,7 @@ function Collection() {
   const { data: artistAlbums } = useArtistAlbums(currentArtistId)
 
   const [currentTagId, setcurrentTagId] = useState<string | undefined>(undefined)
-  const { data: tagAlbums, isLoading: isTagAlbumsLoading } = useTaggedAlbums(currentTagId)
+  const { data: tagAlbums } = useTaggedAlbums(currentTagId)
 
   const [currentPlaylistId, setCurrentPlaylistId] = useState<string | undefined>(undefined)
   const [playlistLibrary, setPlaylistLibrary] = useState<Library | undefined>(undefined)
@@ -105,8 +105,7 @@ function Collection() {
       }
     }
     //Check if we need to sync
-    //TODO: Renable after dev
-    //syncLibraries()
+    syncLibraries()
   }, [libraries])
 
   return (
