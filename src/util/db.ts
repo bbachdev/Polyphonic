@@ -1,4 +1,4 @@
-import { Album, Artist, Playlist, Song, song_sort, Tag } from "@/types/Music";
+import { Album, Artist, Playlist, Song, song_sort, Tag, AlbumTag } from "@/types/Music";
 import Database from "@tauri-apps/plugin-sql";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
@@ -97,11 +97,18 @@ export async function getTags() {
   return tags;
 }
 
+export async function getTagsByAlbum(albumId: string) {
+  const db = await getDb();
+  let tagQuery = "SELECT tag_id FROM album_tags WHERE album_id = ?";
+  const tags: AlbumTag[] = await db.select<AlbumTag[]>(tagQuery, [albumId]);
+  return tags;
+}
+
 export async function getAlbumsByTag(tagId: string) {
   const appDataDirPath = await appDataDir();
   const db = await getDb();
   const albums = await db.select<Album[]>(
-    "SELECT id, name, artist_id, artist_name, cover_art, year, duration FROM albums WHERE id IN (SELECT album_id FROM album_tags WHERE tag_id = ?) ORDER BY year DESC",
+    "SELECT id, name, artist_id, artist_name, cover_art, year, duration FROM albums WHERE id IN (SELECT album_id FROM album_tags WHERE tag_id = ?) ORDER BY name ASC",
     [tagId]
   );
   for (let i = 0; i < albums.length; i++) {
@@ -142,6 +149,23 @@ export async function getSongsFromPlaylist(library: Library, playlist_id: string
   songs.sort((a, b) => ids.get(a.id) - ids.get(b.id));
 
   return songs
+}
+
+export async function createTags(tags: string[]) {
+  const db = await getDb();
+  for(let tag of tags) {
+    await db.execute("INSERT OR IGNORE INTO tags (id, name) VALUES (? , ?)", [tag, tag]);
+  }
+}
+
+export async function createAlbumTags(albumId: string, tags: string[]) {
+  const db = await getDb();
+  for(let tag of tags) {
+    await db.execute("INSERT INTO album_tags (album_id, tag_id) VALUES (? , ?) ON CONFLICT DO NOTHING", [albumId, tag]);
+  }
+
+  //Delete old tags
+  await db.execute("DELETE FROM album_tags WHERE album_id = ? AND tag_id NOT IN ('" + tags.join("','") + "')", [albumId]);
 }
 
 export async function resyncCollection() {

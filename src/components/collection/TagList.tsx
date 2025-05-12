@@ -38,7 +38,7 @@ export default function TagList( { onTagSelected, onArtistClicked }: TagListProp
   return (
     <div className={`w-full h-full flex flex-col`}>
       <div className={`p-2 flex flex-row items-center`}>
-        <h1>Artists</h1>
+        <h1>Tags</h1>
         <button className={`ml-auto text-slate-400 underline`} onClick={onArtistClicked}>
           <span className={`flex flex-row gap-1 items-center`}><HiSwitchHorizontal />Artists</span>
         </button>

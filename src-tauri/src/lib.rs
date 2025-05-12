@@ -39,6 +39,12 @@ pub fn run() {
         CREATE TABLE IF NOT EXISTS album_tags (id TEXT PRIMARY KEY, tag_id TEXT REFERENCES tags(id), album_id TEXT REFERENCES albums(id));",
         kind: MigrationKind::Up,
       },
+      Migration {
+        version: 5,
+        description: "Add unique constraint to album_tags table",
+        sql: "CREATE UNIQUE INDEX IF NOT EXISTS album_tag_idx ON album_tags (album_id, tag_id);",
+        kind: MigrationKind::Up,
+      },
     ];
 
     tauri::Builder::default()

@@ -143,7 +143,7 @@ function Collection() {
               <>
                 <ResizableHandle className={`dark:bg-slate-200`} />
                 <ResizablePanel defaultSize={58} minSize={30}>
-                  <AlbumList libraries={libraries || new Map<String, Library>()} parentAlbums={((leftView === 'artist') ? artistAlbums : tagAlbums) || []} onAlbumSelected={getAlbumSongs} />
+                  <AlbumList libraries={libraries || new Map<String, Library>()} parentAlbums={((leftView === 'artist') ? artistAlbums : tagAlbums) || []} onAlbumSelected={getAlbumSongs} view={leftView} />
                 </ResizablePanel>
               </>   
             )}

@@ -14,10 +14,11 @@ import Spinner from '@/components/ui/spinner';
 interface AlbumListProps {
   parentAlbums: Album[],
   libraries: Map<String, Library>,
-  onAlbumSelected: (albumId: Album | undefined) => void
+  onAlbumSelected: (albumId: Album | undefined) => void,
+  view: 'artist' | 'tag'
 }
 
-export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: AlbumListProps) {
+export default function AlbumList({ parentAlbums, libraries, onAlbumSelected, view }: AlbumListProps) {
   const [albums, setAlbums] = useState<Album[]>([])
   const [selectedAlbum, setSelectedAlbum] = useState<Album | undefined>(undefined)
 
@@ -28,8 +29,12 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected }: 
   const { data: recentlyPlayed, isSuccess: isRecentlyPlayedSuccess, isLoading: isRecentlyPlayedLoading } = useRecentAlbums(libraries)
 
   useEffect(() => {
-    setAlbums(recentlyPlayed || [])
-  }, [recentlyPlayed])
+    if(view === 'artist') {
+      setAlbums(recentlyPlayed || [])
+    }else {
+      setAlbums([])
+    }
+  }, [recentlyPlayed, view])
 
   useEffect(() => {
     async function updateAlbumList() {
