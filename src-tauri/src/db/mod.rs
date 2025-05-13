@@ -63,7 +63,11 @@ pub async fn insert_artists(
             .await?;
     }
 
-    let placeholders: String = artist_ids.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
+    let placeholders: String = artist_ids
+        .iter()
+        .map(|_| "?")
+        .collect::<Vec<_>>()
+        .join(", ");
     let query = format!("DELETE FROM artists WHERE id NOT IN ({})", placeholders);
     let mut query_object = sqlx::query(&query);
     for id in artist_ids {
@@ -75,7 +79,11 @@ pub async fn insert_artists(
     Ok(())
 }
 
-pub async fn insert_albums(pool: &Pool<Sqlite>, albums: &Vec<Album>, album_ids: &Vec<String>) -> Result<(), anyhow::Error> {
+pub async fn insert_albums(
+    pool: &Pool<Sqlite>,
+    albums: &Vec<Album>,
+    album_ids: &Vec<String>,
+) -> Result<(), anyhow::Error> {
     //TODO: Check if there's a more efficient way to do this
     for album in albums {
         let album_id = &album.id;
@@ -101,7 +109,7 @@ pub async fn insert_albums(pool: &Pool<Sqlite>, albums: &Vec<Album>, album_ids: 
         .execute(pool)
         .await?;
     }
-    
+
     let placeholders: String = album_ids.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
     let query = format!("DELETE FROM albums WHERE id NOT IN ({})", placeholders);
     let mut query_object = sqlx::query(&query);
@@ -114,7 +122,11 @@ pub async fn insert_albums(pool: &Pool<Sqlite>, albums: &Vec<Album>, album_ids: 
     Ok(())
 }
 
-pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>, song_ids: &Vec<String>) -> Result<(), anyhow::Error> {
+pub async fn insert_songs(
+    pool: &Pool<Sqlite>,
+    songs: &Vec<Song>,
+    song_ids: &Vec<String>,
+) -> Result<(), anyhow::Error> {
     //TODO: Check if there's a more efficient way to do this
     for song in songs {
         let song_id = &song.id;
@@ -160,7 +172,11 @@ pub async fn insert_songs(pool: &Pool<Sqlite>, songs: &Vec<Song>, song_ids: &Vec
     Ok(())
 }
 
-pub async fn insert_playlists(pool: &Pool<Sqlite>, playlists: &Vec<Playlist>, playlist_ids: &Vec<String>) -> Result<(), anyhow::Error> {
+pub async fn insert_playlists(
+    pool: &Pool<Sqlite>,
+    playlists: &Vec<Playlist>,
+    playlist_ids: &Vec<String>,
+) -> Result<(), anyhow::Error> {
     for playlist in playlists {
         sqlx::query(
             "INSERT OR IGNORE INTO playlists (id, library_id, name, owner, created, modified, song_count, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -177,7 +193,11 @@ pub async fn insert_playlists(pool: &Pool<Sqlite>, playlists: &Vec<Playlist>, pl
         .await?;
     }
 
-    let placeholders: String = playlist_ids.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
+    let placeholders: String = playlist_ids
+        .iter()
+        .map(|_| "?")
+        .collect::<Vec<_>>()
+        .join(", ");
     let query = format!("DELETE FROM playlists WHERE id NOT IN ({})", placeholders);
     let mut query_object = sqlx::query(&query);
     for id in playlist_ids {

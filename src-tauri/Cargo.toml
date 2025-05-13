@@ -33,3 +33,6 @@ futures = "0.3.21"
 sqlx = { version = "0.8.2", features = ["runtime-tokio", "sqlite", "derive"] }
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 image = "0.25.5"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-window-state = "2"

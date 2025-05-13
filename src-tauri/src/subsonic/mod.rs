@@ -8,7 +8,9 @@ use reqwest::Client;
 use crate::formatter::create_connection_string;
 use crate::models::Library;
 use crate::responses::{
-    SubsonicBaseResponse, SubsonicGetAlbumList2Response, SubsonicGetAlbumsResponse, SubsonicGetArtistsResponse, SubsonicGetPlaylistResponse, SubsonicGetPlaylistsResponse, SubsonicGetSongsResponse, SubsonicPlaylist, SubsonicResponse
+    SubsonicBaseResponse, SubsonicGetAlbumList2Response, SubsonicGetAlbumsResponse,
+    SubsonicGetArtistsResponse, SubsonicGetPlaylistResponse, SubsonicGetPlaylistsResponse,
+    SubsonicGetSongsResponse, SubsonicPlaylist, SubsonicResponse,
 };
 
 /* Ping
@@ -96,88 +98,90 @@ pub async fn get_album_art(
     client: Client,
     path: &String,
 ) -> Result<(), anyhow::Error> {
-  if !Path::new(&format!("{}/cover_art/{}{}", path, cover_id, ".png")).exists() && !Path::new(&format!("{}/cover_art/{}{}", path, cover_id, ".jpg")).exists() {
-    match client.get(&url).send().await {
-          Ok(res) => match res.bytes().await {
-              Ok(buf) => {
-                let mut file_buffer = buf.clone();
-                  let mut file_extension = "";
-                  //Determine file type
-                  let mut reader = ImageReader::new(Cursor::new(&buf));
-                  match reader.with_guessed_format().unwrap().format() {
-                      Some(format) => {
-                          if format == ImageFormat::Jpeg {
-                              file_extension = ".jpg";
-                          } else if format == ImageFormat::Png {
-                              file_extension = ".png";
-                          } else if format == ImageFormat::Gif {
-                              file_extension = ".gif";
-                          } else if format == ImageFormat::WebP {
-                              file_extension = ".webp";
-                          }
-                      }
-                      None => {
-                          //Retry (TODO: Seems race-condition related. Can we limit futures instead?)
-                          match client.get(&url).send().await {
-                              Ok(res) => match res.bytes().await {
-                                  Ok(retry_buf) => {
-                                    file_buffer = retry_buf.clone();
-                                    reader = ImageReader::new(Cursor::new(&retry_buf));
-                                    match reader.with_guessed_format().unwrap().format() {
-                                        Some(format) => {
-                                            if format == ImageFormat::Jpeg {
-                                                file_extension = ".jpg";
-                                            } else if format == ImageFormat::Png {
-                                                file_extension = ".png";
-                                            } else if format == ImageFormat::Gif {
-                                                file_extension = ".gif";
-                                            } else if format == ImageFormat::WebP {
-                                                file_extension = ".webp";
+    if !Path::new(&format!("{}/cover_art/{}{}", path, cover_id, ".png")).exists()
+        && !Path::new(&format!("{}/cover_art/{}{}", path, cover_id, ".jpg")).exists()
+    {
+        match client.get(&url).send().await {
+            Ok(res) => match res.bytes().await {
+                Ok(buf) => {
+                    let mut file_buffer = buf.clone();
+                    let mut file_extension = "";
+                    //Determine file type
+                    let mut reader = ImageReader::new(Cursor::new(&buf));
+                    match reader.with_guessed_format().unwrap().format() {
+                        Some(format) => {
+                            if format == ImageFormat::Jpeg {
+                                file_extension = ".jpg";
+                            } else if format == ImageFormat::Png {
+                                file_extension = ".png";
+                            } else if format == ImageFormat::Gif {
+                                file_extension = ".gif";
+                            } else if format == ImageFormat::WebP {
+                                file_extension = ".webp";
+                            }
+                        }
+                        None => {
+                            //Retry (TODO: Seems race-condition related. Can we limit futures instead?)
+                            match client.get(&url).send().await {
+                                Ok(res) => match res.bytes().await {
+                                    Ok(retry_buf) => {
+                                        file_buffer = retry_buf.clone();
+                                        reader = ImageReader::new(Cursor::new(&retry_buf));
+                                        match reader.with_guessed_format().unwrap().format() {
+                                            Some(format) => {
+                                                if format == ImageFormat::Jpeg {
+                                                    file_extension = ".jpg";
+                                                } else if format == ImageFormat::Png {
+                                                    file_extension = ".png";
+                                                } else if format == ImageFormat::Gif {
+                                                    file_extension = ".gif";
+                                                } else if format == ImageFormat::WebP {
+                                                    file_extension = ".webp";
+                                                }
+                                            }
+                                            None => {
+                                                //Default to png
+                                                file_extension = ".png"
                                             }
                                         }
-                                        None => {
-                                            //Default to png
-                                            file_extension = ".png"
-                                        }
                                     }
-                                  },
-                                  Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
-                              }, 
-                              Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
-                          }
-                      }
-                  }
+                                    Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
+                                },
+                                Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
+                            }
+                        }
+                    }
 
-                  //Save file
-                  let mut file =
-                      File::create(format!("{}/cover_art/{}{}", path, cover_id, file_extension))?;
-                  match file.write_all(&file_buffer) {
-                      Ok(_) => Ok(()),
-                      Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
-                  }
-              }
-              Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
-          },
-          Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
-      }
-  } else {
-    Ok(())
-  }
+                    //Save file
+                    let mut file =
+                        File::create(format!("{}/cover_art/{}{}", path, cover_id, file_extension))?;
+                    match file.write_all(&file_buffer) {
+                        Ok(_) => Ok(()),
+                        Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
+                    }
+                }
+                Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
+            },
+            Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
+        }
+    } else {
+        Ok(())
+    }
 }
 
 /* getPlaylists */
 pub async fn get_playlists(library: &Library) -> Result<Vec<SubsonicPlaylist>, anyhow::Error> {
-  let url = create_connection_string(library, "getPlaylists");
-  match reqwest::get(&url).await {
-    Ok(res) => match res
-        .json::<SubsonicResponse<SubsonicGetPlaylistsResponse>>()
-        .await
-    {
-        Ok(playlist_response) => Ok(playlist_response.data.playlists.playlist),
+    let url = create_connection_string(library, "getPlaylists");
+    match reqwest::get(&url).await {
+        Ok(res) => match res
+            .json::<SubsonicResponse<SubsonicGetPlaylistsResponse>>()
+            .await
+        {
+            Ok(playlist_response) => Ok(playlist_response.data.playlists.playlist),
+            Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
+        },
         Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
-    },
-    Err(e) => Err(anyhow::anyhow!("Error: {}", e)),
-  } 
+    }
 }
 
 /* stream
@@ -216,7 +220,10 @@ pub async fn get_album_list(
 }
 
 /* getPlaylist */
-pub async fn get_playlist_songs(library: &Library, playlist_id: &str) -> Result<SubsonicResponse<SubsonicGetPlaylistResponse>, anyhow::Error> {
+pub async fn get_playlist_songs(
+    library: &Library,
+    playlist_id: &str,
+) -> Result<SubsonicResponse<SubsonicGetPlaylistResponse>, anyhow::Error> {
     let mut url = create_connection_string(library, "getPlaylist");
     url.push_str(&format!("&id={}", playlist_id));
     match reqwest::get(&url).await {

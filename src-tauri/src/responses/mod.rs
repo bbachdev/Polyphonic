@@ -142,15 +142,15 @@ pub struct SubsonicAlbumList {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SubsonicGetPlaylistsResponse {
-  #[serde(flatten)]
-  pub base: SubsonicBaseResponse,
-  pub playlists: SubsonicPlaylistContainer,
+    #[serde(flatten)]
+    pub base: SubsonicBaseResponse,
+    pub playlists: SubsonicPlaylistContainer,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SubsonicPlaylistContainer {
-  pub playlist: Vec<SubsonicPlaylist>,
+    pub playlist: Vec<SubsonicPlaylist>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -168,14 +168,14 @@ pub struct SubsonicPlaylist {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SubsonicGetPlaylistResponse {
-  #[serde(flatten)]
-  pub base: SubsonicBaseResponse,
-  pub playlist: SubsonicPlaylistDetails,
+    #[serde(flatten)]
+    pub base: SubsonicBaseResponse,
+    pub playlist: SubsonicPlaylistDetails,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SubsonicPlaylistDetails {
-  pub id: String,
-  pub entry: Vec<SubsonicChild>,
+    pub id: String,
+    pub entry: Vec<SubsonicChild>,
 }

@@ -1,11 +1,18 @@
 use std::{fs, path::Path};
 
 use crate::{
-    db::{db_connect, insert_albums, insert_artists, insert_library, insert_playlists, insert_songs},
+    db::{
+        db_connect, insert_albums, insert_artists, insert_library, insert_playlists, insert_songs,
+    },
     formatter::create_connection_string,
     models::{Album, Artist, Library, Playlist, Song},
-    responses::{SubsonicAlbumID3, SubsonicChild, SubsonicGetArtistsResponse, SubsonicPlaylist, SubsonicResponse},
-    subsonic::{get_album_art, get_albums_for_artist, get_artists, get_playlists, get_songs_for_album},
+    responses::{
+        SubsonicAlbumID3, SubsonicChild, SubsonicGetArtistsResponse, SubsonicPlaylist,
+        SubsonicResponse,
+    },
+    subsonic::{
+        get_album_art, get_albums_for_artist, get_artists, get_playlists, get_songs_for_album,
+    },
 };
 use futures::{future::join_all, StreamExt};
 use tauri::{AppHandle, Manager};
@@ -52,7 +59,6 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
             transformed_artists.push(artist);
         }
     }
-
 
     for album in &albums {
         let album = Album {

@@ -112,7 +112,10 @@ pub async fn get_recently_played(library: Library) -> Result<Vec<String>, String
 }
 
 #[tauri::command]
-pub async fn get_songs_for_playlist(library: Library, playlist_id: String) -> Result<Vec<String>, String> {
+pub async fn get_songs_for_playlist(
+    library: Library,
+    playlist_id: String,
+) -> Result<Vec<String>, String> {
     let mut song_ids = vec![];
     match get_playlist_songs(&library, &playlist_id).await {
         Ok(song_list_response) => {
@@ -126,31 +129,33 @@ pub async fn get_songs_for_playlist(library: Library, playlist_id: String) -> Re
 }
 
 #[tauri::command]
-pub async fn update_library_modified(app_handle: AppHandle, data: HashMap<String, String>) -> Result<bool, String> {
-  let pool = db_connect(&app_handle).await.unwrap();
-  for (key, value) in data {
-    println!("{}: {}", key, value);
-    match sqlx::query(
-      "UPDATE libraries SET last_scanned = (?) WHERE id = (?)",
-    )
-    .bind(value)
-    .bind(key)
-    .execute(&pool)
-    .await {
-      Ok(_) => {},
-      Err(e) => println!("Error: {}", e),
+pub async fn update_library_modified(
+    app_handle: AppHandle,
+    data: HashMap<String, String>,
+) -> Result<bool, String> {
+    let pool = db_connect(&app_handle).await.unwrap();
+    for (key, value) in data {
+        println!("{}: {}", key, value);
+        match sqlx::query("UPDATE libraries SET last_scanned = (?) WHERE id = (?)")
+            .bind(value)
+            .bind(key)
+            .execute(&pool)
+            .await
+        {
+            Ok(_) => {}
+            Err(e) => println!("Error: {}", e),
+        }
     }
-  }
-  Ok(true)
+    Ok(true)
 }
 
 #[tauri::command]
 pub async fn clear_cover_art_cache(app_handle: AppHandle) -> Result<bool, String> {
-  let binding = app_handle.path().app_config_dir().unwrap();
-  let app_data_dir = binding.to_str().unwrap();
-  let data_dir_string = app_data_dir.to_string();
+    let binding = app_handle.path().app_config_dir().unwrap();
+    let app_data_dir = binding.to_str().unwrap();
+    let data_dir_string = app_data_dir.to_string();
 
-  let cover_art_path = format!("{}/cover_art", data_dir_string);
-  fs::remove_dir_all(cover_art_path).unwrap();
-  Ok(true)
+    let cover_art_path = format!("{}/cover_art", data_dir_string);
+    fs::remove_dir_all(cover_art_path).unwrap();
+    Ok(true)
 }
