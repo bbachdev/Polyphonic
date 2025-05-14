@@ -238,3 +238,13 @@ pub async fn get_libraries(app_handle: &AppHandle) -> Result<Vec<Library>, anyho
     }
     Ok(libraries_with_hash)
 }
+
+pub async fn update_last_scanned(pool: &Pool<Sqlite>, library_id: &String) -> Result<(), anyhow::Error> {
+    let mut query_object = sqlx::query("UPDATE libraries SET last_scanned = (?) WHERE id = (?)");
+    let start = SystemTime::now();
+    let since_the_epoch = start.duration_since(UNIX_EPOCH);
+    let library_last_scanned = since_the_epoch.unwrap().as_millis().to_string();
+    query_object = query_object.bind(library_last_scanned).bind(library_id);
+    query_object.execute(pool).await?;
+    Ok(())
+}
