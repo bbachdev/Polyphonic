@@ -21,12 +21,16 @@ import { usePlaylistSongs } from '@/hooks/query/usePlaylistSongs';
 import { useSongs } from '@/hooks/query/useSongs';
 import { useLibraries } from '@/hooks/query/useLibraries';
 import Settings from '@/components/settings/Settings';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEY_ARTISTS, QUERY_KEY_MOST_RECENTLY_PLAYED } from '@/util/query';
 
 export const Route = createLazyFileRoute('/collection')({
   component: Collection,
 })
 
 function Collection() {
+  const queryClient = useQueryClient()
+  
   const [overallPage, setOverallPage] = useState<'collection' | 'settings'>('collection')
   const [songList, setSongList] = useState<Song[]>([])
   //const [queue, setQueue] = useState<Queue>({ songs: [], current_song: -1 })
@@ -87,22 +91,24 @@ function Collection() {
   useEffect(() => {
     async function syncLibraries() {
       //Check if we need to sync
-      // if (libraries && libraries.size > 0) {
-      //   const library_data = Array.from(libraries.values())
-      //   if(await library_modified(library_data) === true) {
-      //     setIsScanning(true)
-      //     await invoke('sync_collection', { libraries: library_data })
-      //       .then(() => {
-      //         console.log("Synced")
-      //         setIsScanning(false)
-      //       }).catch((e) => {
-      //         console.log("==Error: ", e)
-      //         console.log("Failed to sync")
-      //       })
-      //   }else{
-      //     console.log("Library not modified")
-      //   }
-      // }
+      if (libraries && libraries.size > 0) {
+        const library_data = Array.from(libraries.values())
+        if(await library_modified(library_data) === true) {
+          setIsScanning(true)
+          await invoke('sync_collection', { libraries: library_data })
+            .then(() => {
+              console.log("Synced")
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_ARTISTS] })
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_MOST_RECENTLY_PLAYED] })
+              setIsScanning(false)
+            }).catch((e) => {
+              console.log("==Error: ", e)
+              console.log("Failed to sync")
+            })
+        }else{
+          console.log("Library not modified")
+        }
+      }
     }
     //Check if we need to sync
     syncLibraries()
