@@ -7,7 +7,7 @@ import { useContext } from 'react';
 
 interface SongListProps {
   songs: Song[],
-  listInfo: ListInfo | undefined,
+  listInfo: Map<string, ListInfo>,
   nowPlayingId: string | undefined
   mode: 'artist' | 'playlist'
 }
@@ -26,18 +26,18 @@ export default function SongList({ songs, listInfo, nowPlayingId, mode}: SongLis
 
   return (
     <div className={`w-full h-full flex flex-col`}>
-      {listInfo && (
-        <div className={`py-2 px-4 flex flex-col`}>
-          <p className={`text-2xl`}>{listInfo.title}</p>
-          <p className={`text-base`}>{listInfo.author}</p>
-        </div>
-      )}
       <ScrollArea className={`w-full overflow-hidden`}>
         {songs.map((song, index) => (
-          <>
-          {songs[index-1] && song.disc_number !== songs[index-1].disc_number && (
-            <div className={`py-4 px-2 flex flex-row items-center gap-3`}><FaCompactDisc size={16}/>Disc {song.disc_number}</div>
-          )}
+          <div key={song.id} className={`flex flex-col`}>
+            {mode === 'artist' && (index === 0 || listInfo.get(songs[index-1].album_id)?.id !== listInfo.get(song.album_id)?.id) && (
+              <div className={`py-2 px-4 flex flex-col`}>
+                <p className={`text-2xl`}>{listInfo.get(song.album_id)?.title}</p>
+                <p className={`text-base`}>{listInfo.get(song.album_id)?.author}</p>
+              </div>
+            )}
+            {songs[index-1] && song.disc_number !== songs[index-1].disc_number && (
+              <div className={`py-4 px-2 flex flex-row items-center gap-3`}><FaCompactDisc size={16}/>Disc {song.disc_number}</div>
+            )}
             <div className={`p-2 cursor-pointer flex flex-row items-center ${song.id === nowPlayingId ? 'dark:bg-slate-700' : ''} dark:hover:bg-slate-700`} key={index} onClick={() => playSong(song.id)}>
               { mode === 'artist' && song.track !== 0 && (
                 <span className={`mr-2`}>{song.track.toLocaleString('en-US', { minimumIntegerDigits: 2 })}</span>
@@ -53,8 +53,7 @@ export default function SongList({ songs, listInfo, nowPlayingId, mode}: SongLis
                 <p className={`mt-1 px-1 text-xs dark:text-slate-200/90 line-clamp-1 break-all`}>{song.artist_name}</p>
               </div>
             </div>
-          </>
-          
+          </div>
         ))}
       </ScrollArea>
     </div>

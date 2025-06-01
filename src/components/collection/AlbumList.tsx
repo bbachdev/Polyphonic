@@ -14,13 +14,17 @@ import Spinner from '@/components/ui/spinner';
 interface AlbumListProps {
   parentAlbums: Album[],
   libraries: Map<String, Library>,
-  onAlbumSelected: (albumId: Album | undefined) => void,
+  onAlbumsSelected: (albums: Album[]) => void,
   view: 'artist' | 'tag'
 }
 
-export default function AlbumList({ parentAlbums, libraries, onAlbumSelected, view }: AlbumListProps) {
+export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, view }: AlbumListProps) {
   const [albums, setAlbums] = useState<Album[]>([])
-  const [selectedAlbum, setSelectedAlbum] = useState<Album | undefined>(undefined)
+
+  // const [selectedAlbum, setSelectedAlbum] = useState<Album | undefined>(undefined)
+
+  //NEW
+  const [selectedAlbums, setSelectedAlbums] = useState<Album[]>([])
 
   //Tag-related
   const [albumContext, setAlbumContext] = useState<string | undefined>(undefined)
@@ -48,19 +52,47 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected, vi
     updateAlbumList()
   }, [parentAlbums])
 
-  function selectAlbum(e: MouseEvent, albumId: string) {
-    //Ctrl + click
-    if (e.ctrlKey) {
-      setSelectedAlbum(undefined)
-      onAlbumSelected(undefined)
-    } else {
-      //Regular click
-      if (selectedAlbum?.id !== albumId) {
-        let album = albums.find(a => a.id === albumId)
-        setSelectedAlbum(album)
-        onAlbumSelected(album)
-      }
+  //TODO: Eventually remove
+  // function selectAlbum(e: MouseEvent, albumId: string) {
+  //   //Ctrl + click
+  //   if (e.ctrlKey) {
+  //     setSelectedAlbum(undefined)
+  //     onAlbumSelected(undefined)
+  //   } else {
+  //     //Regular click
+  //     if (selectedAlbum?.id !== albumId) {
+  //       let album = albums.find(a => a.id === albumId)
+  //       setSelectedAlbum(album)
+  //       onAlbumSelected(album)
+  //     }
+  //   }
+  // }
+
+  function handleAlbumSelect(e: MouseEvent, albumId: string) {
+    let album = albums.find(a => a.id === albumId)
+    console.log("Found album: ", album)
+    if(album === undefined) {
+      return
     }
+    if(e.metaKey || e.ctrlKey) {
+      //Check if album is already selected
+      if(selectedAlbums.includes(album)) {
+        let newAlbumList = selectedAlbums.filter(a => a.id !== albumId)
+        setSelectedAlbums(newAlbumList)
+        onAlbumsSelected(newAlbumList)
+        console.log("Selected albums: ", newAlbumList)
+      }else {
+        let newAlbumList = [...selectedAlbums, album]
+        setSelectedAlbums(newAlbumList)
+        onAlbumsSelected(newAlbumList)
+        console.log("Selected albums: ", newAlbumList)
+      }
+    }else{
+      setSelectedAlbums([album])
+      onAlbumsSelected([album])
+      console.log("Selected albums: ", album)
+    }
+
   }
 
   function openTagDialog(albumId: string) {
@@ -102,7 +134,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumSelected, vi
             {albums.map((album, index) => (
               <ContextMenu key={index} modal={false}>
                 <ContextMenuTrigger>
-                  <div className={`p-2 cursor-pointer ${(album.id === selectedAlbum?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} onClick={(e) => selectAlbum(e, album.id)}>
+                  <div className={`p-2 cursor-pointer ${(album.id === selectedAlbums.find(a => a.id === album.id)?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} onClick={(e) => handleAlbumSelect(e, album.id)}>
                     <div className={`flex flex-col`}>
                       <CoverArt src={album.cover_art + '.png'} fallbackSrc={album.cover_art + '.jpg'} alt={album.name} className={`h-32 w-32`} />
                       <div className={`flex flex-col`}>

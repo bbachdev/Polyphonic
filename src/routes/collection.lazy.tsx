@@ -18,7 +18,7 @@ import TagList from '@/components/collection/TagList';
 import { useArtistAlbums } from '@/hooks/query/useArtistAlbums';
 import { useTaggedAlbums } from '@/hooks/query/useTaggedAlbums';
 import { usePlaylistSongs } from '@/hooks/query/usePlaylistSongs';
-import { useSongs } from '@/hooks/query/useSongs';
+import { useAlbumSongs, useSongs } from '@/hooks/query/useSongs';
 import { useLibraries } from '@/hooks/query/useLibraries';
 import Settings from '@/components/settings/Settings';
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,7 +35,7 @@ function Collection() {
   const [songList, setSongList] = useState<Song[]>([])
   //const [queue, setQueue] = useState<Queue>({ songs: [], current_song: -1 })
   const [nowPlayingId, setNowPlayingId] = useState<string | undefined>(undefined)
-  const [selectedListInfo, setSelectedListInfo] = useState<ListInfo | undefined>(undefined)
+  const [selectedListInfo, setSelectedListInfo] = useState<Map<string, ListInfo>>(new Map<string, ListInfo>())
   const [leftView, setLeftView] = useState<ListView>('artist')
   const [isScanning, setIsScanning] = useState<boolean>(false)
 
@@ -52,16 +52,38 @@ function Collection() {
   const [playlistLibrary, setPlaylistLibrary] = useState<Library | undefined>(undefined)
   const { data: playlistSongs, isLoading: isPlaylistSongsLoading } = usePlaylistSongs(playlistLibrary, currentPlaylistId)
 
-  const [currentAlbumId, setCurrentAlbumId] = useState<string | undefined>(undefined)
-  const { data: albumSongs, isLoading: isAlbumSongsLoading } = useSongs(currentAlbumId)
+  const [selectedAlbums, setSelectedAlbums] = useState<Album[]>([])
+
+  const { results: albumSongResults } = useAlbumSongs(selectedAlbums)
+  const isAlbumSongsLoading = albumSongResults.some(result => result.isFetching)
 
   useEffect(() => {
     if(leftView === 'artist' || leftView === 'tag') {
-      setSongList(albumSongs || [])
-    }else if(leftView === 'playlist') { 
+      // Update when loading state changes 
+      console.log("Album songs loading: ", isAlbumSongsLoading)
+      if (!isAlbumSongsLoading) {
+        setSongList(albumSongResults.map(result => result.data || []).flat())
+      }
+    } else if(leftView === 'playlist') { 
       setSongList(playlistSongs || [])
     }
-  }, [playlistSongs, albumSongs, leftView])
+  }, [leftView, isAlbumSongsLoading])
+
+  useEffect(() => {
+    //TODO: Look into Tanstack Query for more efficient ways of working around caching
+    setSongList(songList.filter(song => selectedAlbums.some(album => album.id === song.album_id)))
+    let listInfoMap = new Map<string, ListInfo>()
+    if(selectedAlbums.length > 0) {
+      selectedAlbums.forEach(album => {
+        listInfoMap.set(album.id, {
+          id: album.id,
+          title: album.name,
+          author: album.artist_name
+        })
+      })
+    }
+    setSelectedListInfo(listInfoMap)
+  }, [selectedAlbums])
 
   async function getPlaylistSongs(playlist: Playlist | undefined) {
     if( playlist === undefined) {
@@ -71,15 +93,6 @@ function Collection() {
         setCurrentPlaylistId(playlist.id)
         setPlaylistLibrary((libraries.get(playlist.library_id)))
       }
-    }
-  }
-
-  async function getAlbumSongs(album: Album | undefined) {
-    if (album === undefined) {
-      setSongList([])
-    } else {
-      setCurrentAlbumId(album.id)
-      setSelectedListInfo({ title: album.name, author: album.artist_name })
     }
   }
 
@@ -111,7 +124,7 @@ function Collection() {
       }
     }
     //Check if we need to sync
-    syncLibraries()
+    //syncLibraries()
   }, [libraries])
 
   return (
@@ -149,7 +162,7 @@ function Collection() {
                 <>
                   <ResizableHandle className={`dark:bg-slate-200`} />
                   <ResizablePanel defaultSize={58} minSize={30}>
-                    <AlbumList libraries={libraries || new Map<String, Library>()} parentAlbums={((leftView === 'artist') ? artistAlbums : tagAlbums) || []} onAlbumSelected={getAlbumSongs} view={leftView} />
+                    <AlbumList libraries={libraries || new Map<String, Library>()} parentAlbums={((leftView === 'artist') ? artistAlbums : tagAlbums) || []} onAlbumsSelected={(albums) => setSelectedAlbums(albums)} view={leftView} />
                   </ResizablePanel>
                 </>   
               )}

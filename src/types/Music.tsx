@@ -53,6 +53,7 @@ type AlbumTag = {
 
 //Could be album, or playlist
 type ListInfo = {
+  id: string;
   title: string;
   author: string;
 }

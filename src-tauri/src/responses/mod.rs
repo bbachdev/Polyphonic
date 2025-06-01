@@ -83,7 +83,7 @@ pub struct SubsonicAlbumID3 {
 }
 
 /*******************************************************************************
- * Albums
+ * Songs
  ******************************************************************************/
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SubsonicGetSongsResponse {

@@ -47,6 +47,8 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     let mut artist_ids: Vec<String> = vec![];
     let mut playlist_ids: Vec<String> = vec![];
 
+    let mut album_artist_ids: Vec<String> = vec![];
+
     println!("Transform");
     for artist in &artists.data.artists.index {
         for artist_detail in &artist.artist {
@@ -72,8 +74,12 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
             duration: album.duration,
         };
         album_ids.push(album.id.clone());
+        album_artist_ids.push(album.artist_id.clone());
         transformed_albums.push(album);
     }
+
+    //Remove artists that aren't album artists (we prefer to use the first artist listed)
+    transformed_artists.retain(|artist| album_artist_ids.contains(&artist.id));
 
     for song in &songs {
         let song = Song {
