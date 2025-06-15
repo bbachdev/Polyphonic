@@ -36,7 +36,7 @@ function Collection() {
   //const [queue, setQueue] = useState<Queue>({ songs: [], current_song: -1 })
   const [nowPlayingId, setNowPlayingId] = useState<string | undefined>(undefined)
   const [selectedListInfo, setSelectedListInfo] = useState<Map<string, ListInfo>>(new Map<string, ListInfo>())
-  const [leftView, setLeftView] = useState<ListView>('artist')
+  const [leftView, setLeftView] = useState<ListView>(localStorage.getItem('leftView') as ListView || 'artist')
   const [isScanning, setIsScanning] = useState<boolean>(false)
 
   //Music Data
@@ -70,7 +70,6 @@ function Collection() {
   }, [leftView, isAlbumSongsLoading])
 
   useEffect(() => {
-    //TODO: Look into Tanstack Query for more efficient ways of working around caching
     setSongList(songList.filter(song => selectedAlbums.some(album => album.id === song.album_id)))
     let listInfoMap = new Map<string, ListInfo>()
     if(selectedAlbums.length > 0) {
@@ -78,7 +77,8 @@ function Collection() {
         listInfoMap.set(album.id, {
           id: album.id,
           title: album.name,
-          author: album.artist_name
+          author: album.artist_name,
+          year: album.year
         })
       })
     }
@@ -99,6 +99,8 @@ function Collection() {
   function toggleLeftView(view: ListView) {
     setSongList([])
     setLeftView(view)
+    //Save left view to local storage
+    localStorage.setItem('leftView', view)
   }
 
   useEffect(() => {

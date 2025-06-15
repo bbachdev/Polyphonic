@@ -32,7 +32,7 @@ export default function SongList({ songs, listInfo, nowPlayingId, mode}: SongLis
             {mode === 'artist' && (index === 0 || listInfo.get(songs[index-1].album_id)?.id !== listInfo.get(song.album_id)?.id) && (
               <div className={`py-2 px-4 flex flex-col`}>
                 <p className={`text-2xl`}>{listInfo.get(song.album_id)?.title}</p>
-                <p className={`text-base`}>{listInfo.get(song.album_id)?.author}</p>
+                <p className={`mt-1 text-base`}>{listInfo.get(song.album_id)?.author} {listInfo.get(song.album_id)?.year ? `- (${listInfo.get(song.album_id)?.year})` : ''}</p>
               </div>
             )}
             {songs[index-1] && song.disc_number !== songs[index-1].disc_number && (
