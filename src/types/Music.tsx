@@ -56,6 +56,7 @@ type ListInfo = {
   id: string;
   title: string;
   author: string;
+  year?: number;
 }
 
 type ListView = 'artist' | 'playlist' | 'tag'

@@ -6,7 +6,7 @@ import CoverArt from './CoverArt'
 import { Library } from '@/types/Config'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import TagDialog from '@/components/collection/TagDialog';
 import { useRecentAlbums } from '@/hooks/query/useRecentAlbums';
 import Spinner from '@/components/ui/spinner';
@@ -27,7 +27,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
   const [selectedAlbums, setSelectedAlbums] = useState<Album[]>([])
 
   //Tag-related
-  const [albumContext, setAlbumContext] = useState<string | undefined>(undefined)
+  const [albumContext, setAlbumContext] = useState<string[]>([])
   const [tagDialogOpen, setTagDialogOpen] = useState(false)
 
   const { data: recentlyPlayed, isSuccess: isRecentlyPlayedSuccess, isLoading: isRecentlyPlayedLoading } = useRecentAlbums(libraries)
@@ -96,11 +96,17 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
   }
 
   function openTagDialog(albumId: string) {
-    setAlbumContext(albumId)
+    if(selectedAlbums.length > 0) {
+      setAlbumContext(selectedAlbums.map(a => a.id))
+    }else{
+      setAlbumContext([albumId])
+    }
+    
+    setTagDialogOpen(true)
   }
 
   function closeTagDialog() {
-    setAlbumContext(undefined)
+    setAlbumContext([])
     setTagDialogOpen(false)
   }
 
@@ -156,8 +162,9 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
           </div>
         </ScrollArea>
       </div>
-      <DialogContent >
-        <TagDialog albumId={albumContext} onClose={closeTagDialog} />
+      <DialogTitle className={`sr-only`}>Set Tags</DialogTitle>
+      <DialogContent aria-description="Set tags for selected albums">
+        <TagDialog albumIds={albumContext} onClose={closeTagDialog} />
       </DialogContent>
     </Dialog>
   )

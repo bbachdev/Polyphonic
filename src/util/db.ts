@@ -158,14 +158,19 @@ export async function createTags(tags: string[]) {
   }
 }
 
-export async function createAlbumTags(albumId: string, tags: string[]) {
+export async function createAlbumTags(albumIds: string[], tags: string[]) {
+  console.log("Album IDs: ", albumIds)
+  console.log("Tags: ", tags)
+
   const db = await getDb();
-  for(let tag of tags) {
-    await db.execute("INSERT INTO album_tags (album_id, tag_id) VALUES (? , ?) ON CONFLICT DO NOTHING", [albumId, tag]);
+  for (let albumId of albumIds) {
+    for(let tag of tags) {
+      await db.execute("INSERT INTO album_tags (album_id, tag_id) VALUES (? , ?) ON CONFLICT DO NOTHING", [albumId, tag]);
+    }
   }
 
   //Delete old tags
-  await db.execute("DELETE FROM album_tags WHERE album_id = ? AND tag_id NOT IN ('" + tags.join("','") + "')", [albumId]);
+  await db.execute("DELETE FROM album_tags WHERE album_id IN ('" + albumIds.join("','") + "') AND tag_id NOT IN ('" + tags.join("','") + "')");
 }
 
 export async function resyncCollection() {

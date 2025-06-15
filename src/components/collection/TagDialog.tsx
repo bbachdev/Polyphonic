@@ -9,31 +9,47 @@ import { createAlbumTags, createTags } from '@/util/db';
 import { useEffect, useState } from 'react';
 import { FaPlus } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEY_ALBUM_TAGS } from '@/util/query';
 
 interface TagDialogProps {
-  albumId: string | undefined
+  albumIds: string[]
   onClose: () => void
 }
 
-export default function TagDialog( { albumId, onClose }: TagDialogProps) {
+export default function TagDialog( { albumIds, onClose }: TagDialogProps) {
+  const queryClient = useQueryClient()
   const [newTagName, setNewTagName] = useState<string>('')
   const [newTags, setNewTags] = useState<string[]>([])
+
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [open, setOpen] = useState(false)
 
-  const { data: albumTags } = useAlbumTags(albumId)
+  const albumTags = useAlbumTags(albumIds)
+  const allSuccess = albumTags.every(result => result.isSuccess);
   const { data: tags } = useTags()
 
   useEffect(() => {
-    setSelectedTags(albumTags || [])
-  }, [albumTags])
+    if(allSuccess === true) {
+      console.log("Album Tags: ", albumIds)
+      const allTagIds = albumTags
+      .map(queryResult => queryResult.data || [])
+      .flat();
+      setSelectedTags([...new Set(allTagIds)]);
+    }
+  }, [allSuccess])
 
   async function saveTags() {
     //Create new tags
     await createTags(newTags)
 
     //Set tags on album
-    await createAlbumTags(albumId!, selectedTags)
+    await createAlbumTags(albumIds, selectedTags)
+
+    //Invalidate keys
+    await Promise.all(albumIds.map(albumId => 
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY_ALBUM_TAGS, albumId] })
+    ))
     
     onClose()
   }
@@ -74,7 +90,7 @@ export default function TagDialog( { albumId, onClose }: TagDialogProps) {
           </PopoverContent>
         </Popover> 
       </Command>
-      { selectedTags && (
+      { selectedTags.length > 0 && (
         <div className={`mt-4 flex flex-row flex-wrap gap-2 items-center`}>
           <span className={`text-sm text-slate-500 dark:text-slate-400`}>Selected Tags:</span>
           {selectedTags.map((tag) => (
