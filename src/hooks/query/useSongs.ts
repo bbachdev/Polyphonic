@@ -1,6 +1,6 @@
 import { getSongsForAlbum } from '@/util/db'
 import { QUERY_KEY_SONGS } from '@/util/query'
-import { useQuery, useQueries, UseQueryResult } from '@tanstack/react-query'
+import { useQuery, useQueries } from '@tanstack/react-query'
 import { Song, Album } from '@/types/Music'
 
 // For fetching songs for a single album
