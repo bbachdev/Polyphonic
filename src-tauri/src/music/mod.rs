@@ -2,7 +2,7 @@ use std::{fs, path::Path};
 
 use crate::{
     db::{
-        db_connect, insert_albums, insert_artists, insert_library, insert_playlists, insert_songs, update_last_scanned,
+        db_connect, delete_unused_artists, insert_albums, insert_artists, insert_library, insert_playlists, insert_songs, update_last_scanned
     },
     formatter::create_connection_string,
     models::{Album, Artist, Library, Playlist, Song},
@@ -134,6 +134,11 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     println!("Insert Playlists");
     match insert_playlists(&pool, &transformed_playlists, &playlist_ids).await {
         Ok(_) => println!("Playlists inserted"),
+        Err(e) => println!("Error: {}", e),
+    }
+    println!("Delete unused artists");
+    match delete_unused_artists(&pool).await {
+        Ok(_) => println!("Unused artists deleted"),
         Err(e) => println!("Error: {}", e),
     }
     println!("Update last scanned");

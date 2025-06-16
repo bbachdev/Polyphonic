@@ -126,7 +126,7 @@ function Collection() {
       }
     }
     //Check if we need to sync
-    //syncLibraries()
+    syncLibraries()
   }, [libraries])
 
   return (
