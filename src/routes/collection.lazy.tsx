@@ -18,7 +18,7 @@ import TagList from '@/components/collection/TagList';
 import { useArtistAlbums } from '@/hooks/query/useArtistAlbums';
 import { useTaggedAlbums } from '@/hooks/query/useTaggedAlbums';
 import { usePlaylistSongs } from '@/hooks/query/usePlaylistSongs';
-import { useAlbumSongs, useSongs } from '@/hooks/query/useSongs';
+import { useAlbumSongs } from '@/hooks/query/useSongs';
 import { useLibraries } from '@/hooks/query/useLibraries';
 import Settings from '@/components/settings/Settings';
 import { useQueryClient } from '@tanstack/react-query';
