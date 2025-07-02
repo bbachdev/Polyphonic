@@ -11,10 +11,6 @@ export const useRecentAlbums = (libraries: Map<String, Library>) => useQuery({
     .then(async (albumIds: any) => {
       const albumListAlbums = await getAlbumsById(albumIds as string[])
       return albumListAlbums
-      // setRecentlyPlayed(albumListAlbums)
-      // setAlbums(albumListAlbums)
-      // console.log("Album ids", albumIds)
-      // return albumIds
     })
   }
 })

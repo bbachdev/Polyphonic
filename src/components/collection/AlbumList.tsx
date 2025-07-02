@@ -3,13 +3,15 @@ import { MdQueue } from "react-icons/md";
 import { Album } from '@/types/Music'
 import { useState, MouseEvent, useEffect } from 'react'
 import CoverArt from './CoverArt'
-import { Library } from '@/types/Config'
+import { Library, SortDirection, SortType } from '@/types/Config'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import TagDialog from '@/components/collection/TagDialog';
 import { useRecentAlbums } from '@/hooks/query/useRecentAlbums';
+import { useAddedAlbums } from '@/hooks/query/useAddedAlbums';
 import Spinner from '@/components/ui/spinner';
+import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
 interface AlbumListProps {
   parentAlbums: Album[],
@@ -21,7 +23,9 @@ interface AlbumListProps {
 export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, view }: AlbumListProps) {
   const [albums, setAlbums] = useState<Album[]>([])
 
-  // const [selectedAlbum, setSelectedAlbum] = useState<Album | undefined>(undefined)
+  //Sort
+  const [sortType, setSortType] = useState<SortType>(SortType.RECENTLY_PLAYED)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.DESC)
 
   //NEW
   const [selectedAlbums, setSelectedAlbums] = useState<Album[]>([])
@@ -31,6 +35,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
   const [tagDialogOpen, setTagDialogOpen] = useState(false)
 
   const { data: recentlyPlayed, isSuccess: isRecentlyPlayedSuccess, isLoading: isRecentlyPlayedLoading } = useRecentAlbums(libraries)
+  const { data: recentlyAdded, isSuccess: isRecentlyAddedSuccess, isLoading: isRecentlyAddedLoading } = useAddedAlbums(libraries)
 
   useEffect(() => {
     if(view === 'artist') {
@@ -44,7 +49,11 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
     async function updateAlbumList() {
       if(parentAlbums && parentAlbums.length === 0 && isRecentlyPlayedSuccess) {
         //getRecentlyPlayed()
-        setAlbums(recentlyPlayed)
+        if(sortType === SortType.RECENTLY_PLAYED) {
+          setAlbums(recentlyPlayed)
+        }else {
+          setAlbums(recentlyAdded || [])
+        }
       }else {
         setAlbums(parentAlbums)
       }
@@ -120,6 +129,26 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
     console.log("Adding to queue context: " + albumId)
   }
 
+  function toggleSortDirection() {
+    console.log("Toggle sort direction")
+    setSortDirection(sortDirection === SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC)
+    //Reverse list
+    setAlbums(albums.reverse())
+  }
+
+  function switchSortType() {
+    console.log("Switch sort type")
+    const newSortType = sortType === SortType.RECENTLY_PLAYED ? SortType.RECENTLY_ADDED : SortType.RECENTLY_PLAYED
+
+    setSortType(newSortType)
+
+    if(newSortType === SortType.RECENTLY_PLAYED) {
+      setAlbums(recentlyPlayed || [])
+    }else {
+      setAlbums(recentlyAdded || [])
+    }
+  }
+
   if(isRecentlyPlayedLoading) {
     return <div className={`w-full h-full flex flex-col`}>
       <h1 className={`p-2`}>Album List</h1>
@@ -134,7 +163,19 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
   return (
     <Dialog open={tagDialogOpen} onOpenChange={setTagDialogOpen}>
       <div className={`w-full h-full flex flex-col`}>
-        <h1 className={`p-2`}>Album List</h1>
+        <div className={`flex flex-row`}>
+          <h1 className={`p-2`}>Album List</h1>
+          <div className={`ml-auto p-2 flex flex-row gap-2 items-center text-slate-400`}>
+            {parentAlbums.length === 0 && (
+              <>
+                <p className={`underline cursor-pointer`} onClick={switchSortType}>
+                  {sortType === SortType.RECENTLY_PLAYED ? 'Recently Played' : 'Recently Added'}
+                </p>
+                {sortDirection === SortDirection.ASC ? <FaArrowUp className={`cursor-pointer`} onClick={toggleSortDirection}/> : <FaArrowDown className={`cursor-pointer`} onClick={toggleSortDirection}/>}
+              </>
+            )}
+          </div>
+        </div>
         <ScrollArea className={`w-full overflow-hidden`}>
           <div className={`albumGrid text-center`}>
             {albums.map((album, index) => (

@@ -63,6 +63,7 @@ pub fn run() {
             commands::load_songs,
             commands::get_libraries,
             commands::get_recently_played,
+            commands::get_recently_added,
             commands::get_songs_for_playlist,
             commands::update_library_modified,
             commands::clear_cover_art_cache,

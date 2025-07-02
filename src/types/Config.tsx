@@ -2,6 +2,8 @@ export interface Config {
   theme: string;
   libraries: Library[]
   discord_rp: boolean;
+  albumSortDefault: AlbumSort;
+  albumSortArtist: AlbumSort;
 }
 
 export interface LibraryConfig {
@@ -22,4 +24,21 @@ export interface Library {
   hashed_password?: string;
   salt: string;
   last_scanned?: string;
+}
+
+export enum SortType {
+  ALPHABETICAL,
+  RELEASE_YEAR,
+  RECENTLY_PLAYED,
+  RECENTLY_ADDED
+}
+
+export enum SortDirection {
+  ASC,
+  DESC
+}
+
+export interface AlbumSort {
+  sortType: SortType;
+  direction: SortDirection;
 }

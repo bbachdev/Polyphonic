@@ -112,6 +112,20 @@ pub async fn get_recently_played(library: Library) -> Result<Vec<String>, String
 }
 
 #[tauri::command]
+pub async fn get_recently_added(library: Library) -> Result<Vec<String>, String> {
+    let mut album_ids = vec![];
+    match get_album_list(&library, "newest".to_string()).await {
+        Ok(album_list_response) => {
+            for album in album_list_response.data.album_list_2.album {
+                album_ids.push(album.id);
+            }
+        }
+        Err(e) => println!("Error: {}", e),
+    }
+    Ok(album_ids)
+}
+
+#[tauri::command]
 pub async fn get_songs_for_playlist(
     library: Library,
     playlist_id: String,
