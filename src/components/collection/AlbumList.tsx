@@ -35,7 +35,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
   const [tagDialogOpen, setTagDialogOpen] = useState(false)
 
   const { data: recentlyPlayed, isSuccess: isRecentlyPlayedSuccess, isLoading: isRecentlyPlayedLoading } = useRecentAlbums(libraries)
-  const { data: recentlyAdded, isSuccess: isRecentlyAddedSuccess, isLoading: isRecentlyAddedLoading } = useAddedAlbums(libraries)
+  const { data: recentlyAdded } = useAddedAlbums(libraries)
 
   useEffect(() => {
     if(view === 'artist') {
