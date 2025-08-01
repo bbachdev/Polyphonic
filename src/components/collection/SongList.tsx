@@ -46,7 +46,7 @@ export default function SongList({ songs, listInfo, nowPlayingId, mode}: SongLis
                 <span className={`mr-3`}>--</span>
               )}
               { mode === 'playlist' && (
-                <CoverArt src={song.cover_art + '.png'} fallbackSrc={song.cover_art + '.jpg'} alt={song.title} className={`h-16 w-16`}></CoverArt>
+                <CoverArt src={song.cover_art} fallbackSrc={song.cover_art + '.webp'} alt={song.title} className={`h-16 w-16`}></CoverArt>
               )}
               <div className={`flex flex-col`}>
                 <p className={`px-1 font-semibold text-base line-clamp-1 break-all`}>{song.title}</p>

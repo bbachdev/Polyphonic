@@ -22,7 +22,7 @@ import { useAlbumSongs } from '@/hooks/query/useSongs';
 import { useLibraries } from '@/hooks/query/useLibraries';
 import Settings from '@/components/settings/Settings';
 import { useQueryClient } from '@tanstack/react-query';
-import { QUERY_KEY_ARTISTS, QUERY_KEY_MOST_RECENTLY_ADDED, QUERY_KEY_MOST_RECENTLY_PLAYED } from '@/util/query';
+import { QUERY_ARTIST_ALBUMS, QUERY_KEY_ARTISTS, QUERY_KEY_MOST_RECENTLY_ADDED, QUERY_KEY_MOST_RECENTLY_PLAYED } from '@/util/query';
 
 export const Route = createLazyFileRoute('/collection')({
   component: Collection,
@@ -60,7 +60,6 @@ function Collection() {
   useEffect(() => {
     if(leftView === 'artist' || leftView === 'tag') {
       // Update when loading state changes 
-      console.log("Album songs loading: ", isAlbumSongsLoading)
       if (!isAlbumSongsLoading) {
         setSongList(albumSongResults.map(result => result.data || []).flat())
       }
@@ -112,16 +111,13 @@ function Collection() {
           setIsScanning(true)
           await invoke('sync_collection', { libraries: library_data })
             .then(() => {
-              console.log("Synced")
-              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_ARTISTS] })
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_ARTISTS, QUERY_ARTIST_ALBUMS] })
               queryClient.invalidateQueries({ queryKey: [QUERY_KEY_MOST_RECENTLY_PLAYED, QUERY_KEY_MOST_RECENTLY_ADDED] })
               setIsScanning(false)
             }).catch((e) => {
               console.log("==Error: ", e)
               console.log("Failed to sync")
             })
-        }else{
-          console.log("Library not modified")
         }
       }
     }

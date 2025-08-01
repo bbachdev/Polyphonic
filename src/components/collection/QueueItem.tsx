@@ -24,7 +24,7 @@ export default function QueueItem( { song, nowPlayingId, onSongSelected, onRemov
       </button>
       <button key={song.id} className={`flex-1 p-2 px-2 flex flex-row items-center hover:bg-slate-700/90 ${song.id === nowPlayingId}`} onClick={() => onSongSelected(song)}>
         {/* Show art and track info */}
-        <CoverArt className={`w-14 h-14`} src={song.cover_art + '.png'} fallbackSrc={song.cover_art + '.jpg'} alt={song.title} />
+        <CoverArt className={`w-14 h-14`} src={song.cover_art} fallbackSrc={song.cover_art + '.webp'} alt={song.title} />
         <div className={`flex flex-col ml-2 mr-2 text-left`}>
           <span className={`text-sm`}>{song.title}</span>
           <span className={`text-xs dark:text-slate-200/90`}>{song.artist_name}</span>

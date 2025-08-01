@@ -1,4 +1,4 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{collections::HashMap, time::{SystemTime, UNIX_EPOCH}};
 
 use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Manager};
@@ -83,15 +83,18 @@ pub async fn insert_albums(
     pool: &Pool<Sqlite>,
     albums: &Vec<Album>,
     album_ids: &Vec<String>,
+    cover_art_map: &HashMap<String, String>,
 ) -> Result<(), anyhow::Error> {
     //TODO: Check if there's a more efficient way to do this
+    let blank_string = String::from("");
     for album in albums {
         let album_id = &album.id;
         let album_name = &album.name;
         let album_artist_id = &album.artist_id;
         let album_artist_name = &album.artist_name;
+        // The ID of the library that this album belongs to.
         let album_library_id = &album.library_id;
-        let album_cover_art = &album.cover_art;
+        let album_cover_art = cover_art_map.get(&album.cover_art).unwrap_or(&blank_string);
         let album_year = album.year.unwrap_or(9999);
         let album_duration = album.duration;
 
@@ -126,8 +129,10 @@ pub async fn insert_songs(
     pool: &Pool<Sqlite>,
     songs: &Vec<Song>,
     song_ids: &Vec<String>,
+    cover_art_map: &HashMap<String, String>,
 ) -> Result<(), anyhow::Error> {
     //TODO: Check if there's a more efficient way to do this
+    let blank_string = String::from("");
     for song in songs {
         let song_id = &song.id;
         let song_title = &song.title;
@@ -140,7 +145,7 @@ pub async fn insert_songs(
         let song_disc_number = song.disc_number;
         let song_duration = song.duration.unwrap_or(0);
         let song_content_type = &song.content_type;
-        let song_cover_art = &song.cover_art;
+        let song_cover_art = cover_art_map.get(&song.cover_art).unwrap_or(&blank_string);
 
         sqlx::query(
             "INSERT OR IGNORE INTO songs (id, title, artist_id, artist_name, album_id, album_name, library_id, track, disc_number, duration, content_type, cover_art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",

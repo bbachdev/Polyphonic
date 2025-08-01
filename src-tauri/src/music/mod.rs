@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::{collections::HashMap, fs, path::Path};
 
 use crate::{
     db::{
@@ -25,7 +25,7 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
     println!("Get Songs");
     let songs: Vec<SubsonicChild> = get_songs(&albums, library).await?;
     println!("Get Cover Art");
-    get_cover_art(&albums, library, app_handle).await?;
+    let cover_art_map = get_cover_art(&albums, library, app_handle).await?;
     println!("Get Playlists");
     let playlists: Vec<SubsonicPlaylist> = get_playlists(library).await?;
 
@@ -122,12 +122,12 @@ pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(
         Err(e) => println!("Error: {}", e),
     }
     println!("Insert Albums");
-    match insert_albums(&pool, &transformed_albums, &album_ids).await {
+    match insert_albums(&pool, &transformed_albums, &album_ids, &cover_art_map).await {
         Ok(_) => println!("Albums inserted"),
         Err(e) => println!("Error: {}", e),
     }
     println!("Insert Songs");
-    match insert_songs(&pool, &transformed_songs, &song_ids).await {
+    match insert_songs(&pool, &transformed_songs, &song_ids, &cover_art_map).await {
         Ok(_) => println!("Songs inserted"),
         Err(e) => println!("Error: {}", e),
     }
@@ -218,7 +218,7 @@ async fn get_cover_art(
     albums: &Vec<SubsonicAlbumID3>,
     library: &Library,
     app_handle: &AppHandle,
-) -> Result<(), anyhow::Error> {
+) -> Result<HashMap<String, String>, anyhow::Error> {
     let binding = app_handle.path().app_config_dir().unwrap();
     let app_data_dir = binding.to_str().unwrap();
 
@@ -243,8 +243,22 @@ async fn get_cover_art(
     }
     //join_all(futures).await;
 
+    let mut cover_art_map: HashMap<String, String> = HashMap::new();
     let stream = futures::stream::iter(futures).buffer_unordered(10);
-    stream.collect::<Vec<_>>().await;
+    let results = stream.collect::<Vec<_>>().await;
+    for result in results {
+        match result {
+            Ok(file_name) => {
+                if !file_name.is_empty() {
+                    cover_art_map.insert(Path::new(&file_name)
+                    .with_extension("")
+                    .to_string_lossy()
+                    .to_string(), file_name);
+                }
+            },
+            Err(e) => println!("Error: {}", e),
+        }
+    }
 
-    Ok(())
+    Ok(cover_art_map)
 }

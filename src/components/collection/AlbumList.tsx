@@ -79,7 +79,6 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
 
   function handleAlbumSelect(e: MouseEvent, albumId: string) {
     let album = albums.find(a => a.id === albumId)
-    console.log("Found album: ", album)
     if(album === undefined) {
       return
     }
@@ -89,17 +88,14 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
         let newAlbumList = selectedAlbums.filter(a => a.id !== albumId)
         setSelectedAlbums(newAlbumList)
         onAlbumsSelected(newAlbumList)
-        console.log("Selected albums: ", newAlbumList)
       }else {
         let newAlbumList = [...selectedAlbums, album]
         setSelectedAlbums(newAlbumList)
         onAlbumsSelected(newAlbumList)
-        console.log("Selected albums: ", newAlbumList)
       }
     }else{
       setSelectedAlbums([album])
       onAlbumsSelected([album])
-      console.log("Selected albums: ", album)
     }
 
   }
@@ -130,14 +126,12 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
   }
 
   function toggleSortDirection() {
-    console.log("Toggle sort direction")
     setSortDirection(sortDirection === SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC)
     //Reverse list
     setAlbums(albums.reverse())
   }
 
   function switchSortType() {
-    console.log("Switch sort type")
     const newSortType = sortType === SortType.RECENTLY_PLAYED ? SortType.RECENTLY_ADDED : SortType.RECENTLY_PLAYED
 
     setSortType(newSortType)
@@ -183,7 +177,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
                 <ContextMenuTrigger>
                   <div className={`p-2 cursor-pointer ${(album.id === selectedAlbums.find(a => a.id === album.id)?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} onClick={(e) => handleAlbumSelect(e, album.id)}>
                     <div className={`flex flex-col`}>
-                      <CoverArt src={album.cover_art + '.png'} fallbackSrc={album.cover_art + '.jpg'} alt={album.name} className={`h-32 w-32`} />
+                      <CoverArt src={album.cover_art} fallbackSrc={album.cover_art + '.webp'} alt={album.name} className={`h-32 w-32`} />
                       <div className={`flex flex-col`}>
                         <p className={`px-1 font-semibold text-sm line-clamp-1 break-all`}>{album.name}</p>
                         <p className={`mt-1 px-1 text-xs dark:text-slate-200/90 line-clamp-1 break-all`}>{album.artist_name}</p>
