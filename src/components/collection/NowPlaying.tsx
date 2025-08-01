@@ -1,4 +1,4 @@
-import { Library } from '@/types/Config';
+import { Config, Library } from '@/types/Config';
 import { Song } from '@/types/Music'
 import { scrobble, stream } from '@/util/subsonic';
 import { RefObject, useContext, useEffect, useRef, useState } from 'react';
@@ -8,6 +8,7 @@ import CoverArt from '@/components/collection/CoverArt';
 import Spinner from '@/components/ui/spinner';
 import QueueContext from '@/contexts/QueueContext';
 import QueueList from './QueueList';
+import { broadcastSongPlay } from '@/util/discord';
 
 //Make default lower volume for better UX
 const DEFAULT_VOLUME = 65;
@@ -24,9 +25,10 @@ enum PlaybackState {
 interface NowPlayingProps {
   libraries: Map<String, Library>
   onPlay: (song: Song | undefined) => void
+  settings: Partial<Config> | undefined
 }
 
-export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
+export default function NowPlaying({ libraries, onPlay, settings }: NowPlayingProps) {
   const { queue, currentSong, setCurrentSong, queueOrigin } = useContext(QueueContext)
   const [nowPlaying, setNowPlaying] = useState<Song | undefined>(undefined)
   const [playbackState, setPlaybackState] = useState<PlaybackState>(PlaybackState.Stopped)
@@ -96,6 +98,11 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
 
       //Scrobble song
       scrobble(song.id, libraries.get(song.library_id)!)
+
+      //If Discord RP enabled, create activity
+      if (settings?.discord_rp === true) {
+        broadcastSongPlay(song)
+      }
 
       //Load nearby songs (if not present)
       songDataMap = new Map<string, string>()

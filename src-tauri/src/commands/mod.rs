@@ -2,13 +2,15 @@ use std::collections::HashMap;
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, State};
 
 use crate::db::db_connect;
 use crate::formatter::{generate_md5, generate_salt, get_library_hash, save_library_hash};
-use crate::models::{Library, LibraryConfig};
+use crate::models::{DiscordActivity, Library, LibraryConfig};
 use crate::music::sync_library;
 use crate::subsonic::{get_album_list, get_playlist_songs, ping_server, stream};
+use crate::artserver::{init_server, stop_server};
+use crate::discord_rpc::{init_discord, update_discord_activity, DiscordRpcState};
 
 #[tauri::command]
 pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
@@ -172,4 +174,36 @@ pub async fn clear_cover_art_cache(app_handle: AppHandle) -> Result<bool, String
     let cover_art_path = format!("{}/cover_art", data_dir_string);
     fs::remove_dir_all(cover_art_path).unwrap();
     Ok(true)
+}
+
+#[tauri::command]
+pub async fn start_art_server(app_handle: tauri::AppHandle) -> Result<String, String> {
+    match init_server(&app_handle).await {
+        Ok(_) => Ok("Art server started on http://127.0.0.1:8080".to_string()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+#[tauri::command]
+pub async fn stop_art_server() -> Result<String, String> {
+    match stop_server().await {
+        Ok(_) => Ok("Art server stopped".to_string()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+#[tauri::command]
+pub async fn init_discord_rpc(state: State<'_, DiscordRpcState>) -> Result<String, String> {
+    match init_discord(state).await {
+        Ok(_) => Ok("Discord RPC initialized".to_string()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+#[tauri::command]
+pub async fn update_discord_rpc(state: State<'_, DiscordRpcState>, activity_info: DiscordActivity) -> Result<String, String> {
+    match update_discord_activity(state, activity_info).await {
+        Ok(_) => Ok("Discord RPC updated".to_string()),
+        Err(e) => Err(e.to_string()),
+    }
 }

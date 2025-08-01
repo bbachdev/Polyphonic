@@ -1,4 +1,5 @@
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
+import { invoke } from '@tauri-apps/api/core';
 import { load } from '@tauri-apps/plugin-store';
 import { useEffect } from 'react';
 
@@ -15,6 +16,12 @@ function Startup() {
       const configKeys = await config.keys()
       console.log(configKeys)
       if (configKeys.length > 0) {
+        //If Discord RP is enabled, start art server
+        const discord_rp = await config.get<{value: boolean}>('discord_rp')
+        if (discord_rp?.value === true) {
+          await invoke('start_art_server')
+        }
+
         navigate({ to: '/collection' })
       } else {
         navigate({ to: '/setup' })

@@ -8,6 +8,7 @@ export const QUERY_KEY_PLAYLISTS = 'playlists'
 export const QUERY_KEY_TAGS = 'tags'
 export const QUERY_KEY_TAGGED_ALBUMS = 'tagged_albums'
 export const QUERY_KEY_ALBUM_TAGS = 'album_tags'
+export const QUERY_KEY_SETTINGS = 'settings'
 
 export const QUERY_KEY_MOST_RECENTLY_PLAYED = 'most_recently_played'
 export const QUERY_KEY_MOST_RECENTLY_ADDED = 'most_recently_added'

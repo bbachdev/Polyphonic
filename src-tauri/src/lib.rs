@@ -7,6 +7,8 @@ mod models;
 mod music;
 mod responses;
 mod subsonic;
+mod artserver;
+mod discord_rpc;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -67,6 +69,10 @@ pub fn run() {
             commands::get_songs_for_playlist,
             commands::update_library_modified,
             commands::clear_cover_art_cache,
+            commands::start_art_server,
+            commands::stop_art_server,
+            commands::init_discord_rpc,
+            commands::update_discord_rpc,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

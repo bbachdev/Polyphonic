@@ -18,6 +18,10 @@ export default function TagList( { onTagSelected, onArtistClicked }: TagListProp
     async function getTagList() {
       const tags = await getTags()
       setTags(tags)
+      if(tags.length > 0) {
+        setSelectedTag(tags[0])
+        onTagSelected(tags[0].id)
+      }
     }
     getTagList()
   }, [])
@@ -25,7 +29,7 @@ export default function TagList( { onTagSelected, onArtistClicked }: TagListProp
   function selectTag(e: MouseEvent, tag: Tag) {
     //Ctrl + click
     if (e.ctrlKey) {
-      setSelectedTag(undefined)
+      //setSelectedTag(undefined)
     } else {
       //Regular click
       if (selectedTag?.id !== tag.id) {

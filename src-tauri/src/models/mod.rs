@@ -94,3 +94,11 @@ pub struct AlbumTag {
     pub tag_id: String,
     pub album_id: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct DiscordActivity {
+    pub state: String,
+    pub details: String,
+    pub large_image_key: String,
+    pub large_image_text: String,
+}

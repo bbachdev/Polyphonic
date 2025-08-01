@@ -23,6 +23,7 @@ import { useLibraries } from '@/hooks/query/useLibraries';
 import Settings from '@/components/settings/Settings';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEY_ARTISTS, QUERY_KEY_MOST_RECENTLY_ADDED, QUERY_KEY_MOST_RECENTLY_PLAYED } from '@/util/query';
+import { useSettings } from '@/hooks/query/useSettings';
 
 export const Route = createLazyFileRoute('/collection')({
   component: Collection,
@@ -56,6 +57,8 @@ function Collection() {
 
   const { results: albumSongResults } = useAlbumSongs(selectedAlbums)
   const isAlbumSongsLoading = albumSongResults.some(result => result.isFetching)
+
+  const { data: settings} = useSettings()
 
   useEffect(() => {
     if(leftView === 'artist' || leftView === 'tag') {
@@ -189,7 +192,7 @@ function Collection() {
           <Settings onBackClicked={() => setOverallPage('collection')} />
         )}
         <div className={`mt-auto`}>
-          <NowPlaying libraries={libraries || new Map<String, Library>()} onPlay={(song) => setNowPlayingId(song?.id)} />
+          <NowPlaying settings={settings} libraries={libraries || new Map<String, Library>()} onPlay={(song) => setNowPlayingId(song?.id)} />
         </div>
         
       </div>
