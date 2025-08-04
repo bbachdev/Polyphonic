@@ -57,6 +57,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
       }else {
         setAlbums(parentAlbums)
       }
+      setSelectedAlbums([])
     }
     updateAlbumList()
   }, [parentAlbums])
