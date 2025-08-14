@@ -111,8 +111,10 @@ function Collection() {
           setIsScanning(true)
           await invoke('sync_collection', { libraries: library_data })
             .then(() => {
-              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_ARTISTS, QUERY_ARTIST_ALBUMS] })
-              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_MOST_RECENTLY_PLAYED, QUERY_KEY_MOST_RECENTLY_ADDED] })
+              queryClient.invalidateQueries({ queryKey: [QUERY_ARTIST_ALBUMS] })
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_ARTISTS] })
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_MOST_RECENTLY_ADDED] })
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_MOST_RECENTLY_PLAYED] })
               setIsScanning(false)
             }).catch((e) => {
               console.log("==Error: ", e)
