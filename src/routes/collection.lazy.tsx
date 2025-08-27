@@ -22,7 +22,7 @@ import { useAlbumSongs } from '@/hooks/query/useSongs';
 import { useLibraries } from '@/hooks/query/useLibraries';
 import Settings from '@/components/settings/Settings';
 import { useQueryClient } from '@tanstack/react-query';
-import { QUERY_ARTIST_ALBUMS, QUERY_KEY_ARTISTS, QUERY_KEY_MOST_RECENTLY_ADDED, QUERY_KEY_MOST_RECENTLY_PLAYED } from '@/util/query';
+import { QUERY_ARTIST_ALBUMS, QUERY_KEY_ARTISTS, QUERY_KEY_MOST_RECENTLY_ADDED, QUERY_KEY_MOST_RECENTLY_PLAYED, QUERY_KEY_TAGGED_ALBUMS } from '@/util/query';
 
 export const Route = createLazyFileRoute('/collection')({
   component: Collection,
@@ -115,6 +115,7 @@ function Collection() {
               queryClient.invalidateQueries({ queryKey: [QUERY_KEY_ARTISTS] })
               queryClient.invalidateQueries({ queryKey: [QUERY_KEY_MOST_RECENTLY_ADDED] })
               queryClient.invalidateQueries({ queryKey: [QUERY_KEY_MOST_RECENTLY_PLAYED] })
+              queryClient.invalidateQueries({ queryKey: [QUERY_KEY_TAGGED_ALBUMS, currentTagId] })
               setIsScanning(false)
             }).catch((e) => {
               console.log("==Error: ", e)

@@ -41,7 +41,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
     if(view === 'artist') {
       setAlbums(recentlyPlayed || [])
     }else {
-      setAlbums([])
+      setAlbums(parentAlbums || [])
     }
   }, [recentlyPlayed, view])
 
@@ -61,22 +61,6 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
     }
     updateAlbumList()
   }, [parentAlbums])
-
-  //TODO: Eventually remove
-  // function selectAlbum(e: MouseEvent, albumId: string) {
-  //   //Ctrl + click
-  //   if (e.ctrlKey) {
-  //     setSelectedAlbum(undefined)
-  //     onAlbumSelected(undefined)
-  //   } else {
-  //     //Regular click
-  //     if (selectedAlbum?.id !== albumId) {
-  //       let album = albums.find(a => a.id === albumId)
-  //       setSelectedAlbum(album)
-  //       onAlbumSelected(album)
-  //     }
-  //   }
-  // }
 
   function handleAlbumSelect(e: MouseEvent, albumId: string) {
     let album = albums.find(a => a.id === albumId)

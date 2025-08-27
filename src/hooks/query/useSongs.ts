@@ -17,7 +17,6 @@ export const useSongs = (albumId: string | undefined) => useQuery<Song[]>({
 
 // For fetching songs for multiple albums in parallel
 export const useAlbumSongs = (albums: Album[]) => {
-  console.log("Albums to get: ", albums)
 
   const results = useQueries({
     queries: albums.map(album => ({
