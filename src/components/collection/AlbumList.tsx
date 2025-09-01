@@ -58,6 +58,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
         setAlbums(parentAlbums)
       }
       setSelectedAlbums([])
+      setAlbumContext([])
     }
     updateAlbumList()
   }, [parentAlbums])
@@ -88,6 +89,9 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
   function openTagDialog(albumId: string) {
     if(selectedAlbums.length > 0) {
       setAlbumContext(selectedAlbums.map(a => a.id))
+      if(!albumContext.includes(albumId)) {
+        setAlbumContext([...albumContext, albumId])
+      }
     }else{
       setAlbumContext([albumId])
     }
