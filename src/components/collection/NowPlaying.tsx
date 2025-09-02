@@ -184,6 +184,13 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
     }
   }
 
+  async function playQueueFromBeginning() {
+    if (audioRef.current) {
+      setCurrentSong(0)
+      await loadSong(queue[0], 0)
+    }
+  }
+
   /* Volume Related */
   const changeVolume = (newLevel: number) => {
     if (!audioRef.current) return;
@@ -297,6 +304,11 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
               )}
               {playbackState === PlaybackState.Paused && (
                 <button onClick={play} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
+                  <FaPlayCircle className={`h-10 w-10`} />
+                </button>
+              )}
+              {playbackState === PlaybackState.Stopped && (
+                <button onClick={playQueueFromBeginning} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
                   <FaPlayCircle className={`h-10 w-10`} />
                 </button>
               )}
