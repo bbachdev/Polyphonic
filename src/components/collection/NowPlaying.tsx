@@ -42,6 +42,8 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLInputElement>(null);
   const volumeRef = useRef<HTMLInputElement>(null);
+  const songLoadingRef = useRef<number>(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const [cachedSongData, setCachedSongData] = useState<Map<string, string>>(new Map())
 
@@ -56,6 +58,18 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
 
   async function loadSong(song: Song, indexToPlay: number) {
     if (song !== undefined && audioRef.current !== null) {
+
+      //Cancel any pending song loads
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+
+      //Create new pending song load (and store locally)
+      const abortController = new AbortController()
+      abortControllerRef.current = abortController
+
+      //Create new overall song loading ref (just increment "id")
+      const songLoadingId = ++songLoadingRef.current
 
       setNowPlaying(song)
       onPlay(song)
@@ -76,13 +90,28 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
         songDataMap = cachedSongData
       } else {
         setPlaybackState(PlaybackState.Loading)
-        audioData = await stream(song, libraries.get(song.library_id)!)
+        try{
+          audioData = await stream(song, libraries.get(song.library_id)!, abortController.signal)
+        }catch(e: any) {
+          if(e.name !== "AbortError") {
+            console.log("Failed to stream song", e)
+            return
+          }
+        }
+        if(songLoadingId !== songLoadingRef.current) {
+          return
+        }
         if (audioData === undefined) {
           console.log("Failed to stream song")
           return
         }
         songDataMap = new Map<string, string>()
         songDataMap.set(song.id, audioData)
+      }
+
+      //Check if song load was cancelled
+      if(songLoadingId !== songLoadingRef.current) {
+        return
       }
 
       audioRef.current.src = audioData
@@ -107,11 +136,20 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
           previousTwo = 0
         }
         for (let i = previousTwo; i <= indexToPlay; i++) {
+          //Check if song load was cancelled
+          if(songLoadingId !== songLoadingRef.current) {
+            return
+          }
           if (cachedSongData.has(queue[i].id)) {
             continue
           }
           let song = queue[i]
-          let audioData = await stream(song, libraries.get(song.library_id)!)
+          let audioData = await stream(song, libraries.get(song.library_id)!, abortController.signal)
+          //Check if song load was cancelled
+          if(songLoadingId !== songLoadingRef.current) {
+            return
+          }
+
           if (audioData === undefined) {
             console.log("Failed to stream song")
             return
@@ -127,17 +165,31 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
           nextTwo = queue.length - 1
         }
         for (let i = indexToPlay + 1; i <= nextTwo; i++) {
+          //Check if song load was cancelled
+          if(songLoadingId !== songLoadingRef.current) {
+            return
+          }
           if (cachedSongData.has(queue[i].id)) {
             continue
           }
           let song = queue[i]
-          let audioData = await stream(song, libraries.get(song.library_id)!)
+          let audioData = await stream(song, libraries.get(song.library_id)!, abortController.signal)
+
+          //Check if song load was cancelled
+          if(songLoadingId !== songLoadingRef.current) {
+            return
+          }
           if (audioData === undefined) {
             console.log("Failed to stream song")
             return
           }
           songDataMap.set(song.id, audioData)
         }
+      }
+
+      //Check if song load was cancelled
+      if(songLoadingId !== songLoadingRef.current) {
+        return
       }
 
       //Save song data to state

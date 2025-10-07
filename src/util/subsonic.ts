@@ -3,7 +3,8 @@ import { Song } from "@/types/Music";
 
 export async function stream(
   song: Song,
-  library: Library
+  library: Library,
+  abortSignal?: AbortSignal
 ): Promise<string | undefined> {
   let host = "";
   let connectionString = "";
@@ -11,7 +12,7 @@ export async function stream(
   host = library.host + (library.port !== -1 ? `:${library.port}` : "");
   connectionString = `${host}/rest/stream.view?id=${song.id}&u=${library.username}&t=${library.hashed_password}&s=${library.salt}&v=1.16.1&c=tauri&f=json`;
 
-  const res = await fetch(connectionString);
+  const res = await fetch(connectionString, { signal: abortSignal });
   const buffer = await res.arrayBuffer();
 
   return URL.createObjectURL(new Blob([buffer], { type: song.content_type }));
