@@ -47,6 +47,11 @@ pub fn run() {
       },
     ];
 
+    #[cfg(target_os = "linux")]
+    unsafe { // Not unsafe if you don't use edition 2024
+        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_sql::Builder::new().build())
