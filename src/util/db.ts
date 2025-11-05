@@ -25,10 +25,7 @@ export async function getAlbumsForArtist(artistId: string) {
     [artistId]
   );
   for (let i = 0; i < albums.length; i++) {
-    const filePath = await join(
-      appDataDirPath,
-      "/cover_art/" + albums[i].cover_art
-    );
+    const filePath = `${appDataDirPath}/cover_art/${albums[i].cover_art}`;
     const assetUrl = convertFileSrc(filePath);
     albums[i].cover_art = assetUrl;
   }
@@ -43,10 +40,7 @@ export async function getSongsForAlbum(albumId: string) {
     [albumId]
   );
   for (let i = 0; i < songs.length; i++) {
-    const filePath = await join(
-      appDataDirPath,
-      "/cover_art/" + songs[i].cover_art
-    );
+    const filePath = `${appDataDirPath}/cover_art/${songs[i].cover_art}`;
     const assetUrl = convertFileSrc(filePath);
     songs[i].cover_art = assetUrl;
   }
@@ -67,10 +61,7 @@ export async function getAlbumsById(albumIds: string[]) {
     ")";
   const albums = await db.select<Album[]>(albumQuery);
   for (let i = 0; i < albums.length; i++) {
-    const filePath = await join(
-      appDataDirPath,
-      "/cover_art/" + albums[i].cover_art
-    );
+    const filePath = `${appDataDirPath}/cover_art/${albums[i].cover_art}`;
     const assetUrl = convertFileSrc(filePath);
     albums[i].cover_art = assetUrl;
   }
@@ -112,10 +103,7 @@ export async function getAlbumsByTag(tagId: string) {
     [tagId]
   );
   for (let i = 0; i < albums.length; i++) {
-    const filePath = await join(
-      appDataDirPath,
-      "/cover_art/" + albums[i].cover_art
-    );
+    const filePath = `${appDataDirPath}/cover_art/${albums[i].cover_art}`;
     const assetUrl = convertFileSrc(filePath);
     albums[i].cover_art = assetUrl;
   }
@@ -136,10 +124,7 @@ export async function getSongsFromPlaylist(library: Library, playlist_id: string
 
   const songs: Song[] = await db.select<Song[]>(songQuery, [playlist_id]);
   for (let i = 0; i < songs.length; i++) {
-    const filePath = await join(
-      appDataDirPath,
-      "/cover_art/" + songs[i].cover_art
-    );
+    const filePath = `${appDataDirPath}/cover_art/${songs[i].cover_art}`;
     const assetUrl = convertFileSrc(filePath);
     songs[i].cover_art = assetUrl;
   }
