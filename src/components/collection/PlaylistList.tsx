@@ -1,26 +1,26 @@
-import { Playlist } from '@/types/Music'
-import { MouseEvent, useState } from 'react'
+import { Playlist, ListView } from '@/types/Music'
+import { MouseEvent, useState, useEffect } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { HiSwitchHorizontal } from 'react-icons/hi'
 import { usePlaylists } from '@/hooks/query/usePlaylists'
+import ViewSwitcher from './ViewSwitcher'
 
 interface PlaylistListProps {
   onPlaylistSelected: (playlistId: Playlist | undefined) => void
-  onTagClicked: () => void
+  onViewChange: (view: ListView) => void
+  currentView: ListView
 }
 
-export default function PlaylistList( {onPlaylistSelected, onTagClicked}: PlaylistListProps) {
+export default function PlaylistList( {onPlaylistSelected, onViewChange, currentView}: PlaylistListProps) {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | undefined>(undefined)
 
   const { data: playlists, isSuccess: isPlaylistsSuccess } = usePlaylists()
 
-  // useEffect(() => {
-  //   async function getPlaylistList() {
-  //     const playlists = await getPlaylists()
-  //     setPlaylists(playlists)
-  //   }
-  //   getPlaylistList()
-  // }, [])
+  useEffect(() => {
+    if (isPlaylistsSuccess && playlists.length > 0) {
+      setSelectedPlaylist(playlists[0])
+      onPlaylistSelected(playlists[0])
+    }
+  }, [isPlaylistsSuccess, playlists, onPlaylistSelected])
 
   function selectPlaylist(e: MouseEvent, playlist: Playlist) {
     //Ctrl + click
@@ -39,9 +39,7 @@ export default function PlaylistList( {onPlaylistSelected, onTagClicked}: Playli
     <div className={`w-full h-full flex flex-col`}>
       <div className={`p-2 flex flex-row items-center`}>
         <h1>Playlists</h1>
-        <button className={`ml-auto text-slate-400 underline`} onClick={onTagClicked}>
-          <span className={`flex flex-row gap-1 items-center`}><HiSwitchHorizontal />Tags</span>
-        </button>
+        <ViewSwitcher currentView={currentView} onViewChange={onViewChange} />
       </div>
       
       <ScrollArea className={`w-full`}>

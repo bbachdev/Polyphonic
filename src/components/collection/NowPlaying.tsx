@@ -24,9 +24,10 @@ enum PlaybackState {
 interface NowPlayingProps {
   libraries: Map<String, Library>
   onPlay: (song: Song | undefined) => void
+  onAlbumClick: (song: Song) => void
 }
 
-export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
+export default function NowPlaying({ libraries, onPlay, onAlbumClick }: NowPlayingProps) {
   const { queue, currentSong, setCurrentSong, queueOrigin } = useContext(QueueContext)
   const [nowPlaying, setNowPlaying] = useState<Song | undefined>(undefined)
   const [playbackState, setPlaybackState] = useState<PlaybackState>(PlaybackState.Stopped)
@@ -332,8 +333,11 @@ export default function NowPlaying({ libraries, onPlay }: NowPlayingProps) {
 
           <div className={`p-4 w-full flex flex-row content-between items-center`}>
             <div className={`flex flex-row gap-2 items-center basis-0 grow`}>
-              <div className={`h-16 w-16 relative`}>
-                <CoverArt src={nowPlaying.cover_art} fallbackSrc={nowPlaying.cover_art + '.webp'} alt={nowPlaying.title} className={`h-16 w-16`} />
+              <div
+                className={`h-16 w-16 relative ${playbackState !== PlaybackState.Loading ? 'cursor-pointer group' : 'cursor-default'}`}
+                onClick={() => playbackState !== PlaybackState.Loading && onAlbumClick(nowPlaying)}
+              >
+                <CoverArt src={nowPlaying.cover_art} fallbackSrc={nowPlaying.cover_art + '.webp'} alt={nowPlaying.title} className={`h-16 w-16 ${playbackState !== PlaybackState.Loading ? 'group-hover:brightness-75' : ''} transition-all`} />
                 {playbackState === PlaybackState.Loading && (
                   <div className={`absolute flex items-center justify-center top-0 left-0 h-16 w-16 bg-slate-200 dark:bg-slate-800/50`}>
                     <Spinner size={32} className={``} />

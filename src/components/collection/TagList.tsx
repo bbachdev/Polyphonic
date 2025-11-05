@@ -1,15 +1,16 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tag } from '@/types/Music';
+import { Tag, ListView } from '@/types/Music';
 import { getTags } from '@/util/db';
 import { MouseEvent, useEffect, useState } from 'react';
-import { HiSwitchHorizontal } from 'react-icons/hi';
+import ViewSwitcher from './ViewSwitcher'
 
 interface TagListProps {
   onTagSelected: (tagId: string | undefined) => void
-  onArtistClicked: () => void
+  onViewChange: (view: ListView) => void
+  currentView: ListView
 }
 
-export default function TagList( { onTagSelected, onArtistClicked }: TagListProps) {
+export default function TagList( { onTagSelected, onViewChange, currentView }: TagListProps) {
   const [tags, setTags] = useState<Tag[]>([])
   const [selectedTag, setSelectedTag] = useState<Tag | undefined>(undefined)
 
@@ -43,9 +44,7 @@ export default function TagList( { onTagSelected, onArtistClicked }: TagListProp
     <div className={`w-full h-full flex flex-col`}>
       <div className={`p-2 flex flex-row items-center`}>
         <h1>Tags</h1>
-        <button className={`ml-auto text-slate-400 underline`} onClick={onArtistClicked}>
-          <span className={`flex flex-row gap-1 items-center`}><HiSwitchHorizontal />Artists</span>
-        </button>
+        <ViewSwitcher currentView={currentView} onViewChange={onViewChange} />
       </div>
       
       <ScrollArea className={`w-full overflow-hidden`}>

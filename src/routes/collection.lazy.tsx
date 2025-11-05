@@ -53,23 +53,23 @@ function Collection() {
   const { data: playlistSongs, isLoading: isPlaylistSongsLoading } = usePlaylistSongs(playlistLibrary, currentPlaylistId)
 
   const [selectedAlbums, setSelectedAlbums] = useState<Album[]>([])
+  const [pendingAlbumId, setPendingAlbumId] = useState<string | undefined>(undefined)
 
   const { results: albumSongResults } = useAlbumSongs(selectedAlbums)
   const isAlbumSongsLoading = albumSongResults.some(result => result.isFetching)
 
   useEffect(() => {
     if(leftView === 'artist' || leftView === 'tag') {
-      // Update when loading state changes 
+      // Update when loading state changes
       if (!isAlbumSongsLoading) {
         setSongList(albumSongResults.map(result => result.data || []).flat())
       }
-    } else if(leftView === 'playlist') { 
+    } else if(leftView === 'playlist') {
       setSongList(playlistSongs || [])
     }
-  }, [leftView, isAlbumSongsLoading])
+  }, [leftView, isAlbumSongsLoading, albumSongResults, playlistSongs])
 
   useEffect(() => {
-    setSongList(songList.filter(song => selectedAlbums.some(album => album.id === song.album_id)))
     let listInfoMap = new Map<string, ListInfo>()
     if(selectedAlbums.length > 0) {
       selectedAlbums.forEach(album => {
@@ -101,6 +101,26 @@ function Collection() {
     //Save left view to local storage
     localStorage.setItem('leftView', view)
   }
+
+  function navigateToAlbum(song: Song) {
+    // Switch to artist view
+    toggleLeftView('artist')
+    // Set the artist
+    setCurrentArtistId(song.artist_id)
+    // Store the album we want to navigate to
+    setPendingAlbumId(song.album_id)
+  }
+
+  // Effect to select the pending album once artistAlbums loads
+  useEffect(() => {
+    if (pendingAlbumId && artistAlbums) {
+      const albumToSelect = artistAlbums.find(album => album.id === pendingAlbumId)
+      if (albumToSelect) {
+        setSelectedAlbums([albumToSelect])
+        setPendingAlbumId(undefined)
+      }
+    }
+  }, [pendingAlbumId, artistAlbums])
 
   useEffect(() => {
     async function syncLibraries() {
@@ -150,13 +170,13 @@ function Collection() {
             <ResizablePanelGroup direction='horizontal'>
               <ResizablePanel defaultSize={20} minSize={15}>
                 { leftView === 'artist' && (
-                  <ArtistList onArtistSelected={(artistId) => setCurrentArtistId(artistId)} onPlaylistClicked={() =>toggleLeftView('playlist')} />
+                  <ArtistList onArtistSelected={(artistId) => setCurrentArtistId(artistId)} onViewChange={toggleLeftView} currentView={leftView} selectedArtistId={currentArtistId} />
                 )}
                 { leftView === 'playlist' && (
-                  <PlaylistList onPlaylistSelected={getPlaylistSongs} onTagClicked={() => toggleLeftView('tag')} />
+                  <PlaylistList onPlaylistSelected={getPlaylistSongs} onViewChange={toggleLeftView} currentView={leftView} />
                 )}
                 { leftView === 'tag' && (
-                  <TagList onTagSelected={(tagId) => setcurrentTagId(tagId)} onArtistClicked={() => toggleLeftView('artist')} />
+                  <TagList onTagSelected={(tagId) => setcurrentTagId(tagId)} onViewChange={toggleLeftView} currentView={leftView} />
                 )}
               </ResizablePanel>
               { (leftView === 'artist' || leftView === 'tag') && (
@@ -188,7 +208,7 @@ function Collection() {
           <Settings onBackClicked={() => setOverallPage('collection')} />
         )}
         <div className={`mt-auto`}>
-          <NowPlaying libraries={libraries || new Map<String, Library>()} onPlay={(song) => setNowPlayingId(song?.id)} />
+          <NowPlaying libraries={libraries || new Map<String, Library>()} onPlay={(song) => setNowPlayingId(song?.id)} onAlbumClick={navigateToAlbum} />
         </div>
         
       </div>
