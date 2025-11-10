@@ -11,9 +11,12 @@ function Startup() {
 
   useEffect(() => {
     async function loadConfig() {
-      const config = await load('config.json', { autoSave: false })
+      const config = await load('config.json', {
+        autoSave: false,
+        defaults: {}
+      })
       const configKeys = await config.keys()
-      console.log(configKeys)
+      console.log("Keys", configKeys)
       if (configKeys.length > 0) {
         navigate({ to: '/collection' })
       } else {

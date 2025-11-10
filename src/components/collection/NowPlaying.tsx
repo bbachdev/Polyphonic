@@ -46,8 +46,6 @@ export default function NowPlaying({ libraries, onPlay, onAlbumClick }: NowPlayi
   const songLoadingRef = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const [cachedSongData, setCachedSongData] = useState<Map<string, string>>(new Map())
-
   useEffect(() => {
     async function getSongData() {
       if (currentSong !== undefined && currentSong !== -1) {
@@ -84,30 +82,25 @@ export default function NowPlaying({ libraries, onPlay, onAlbumClick }: NowPlayi
         progressRef.current.style.background = `linear-gradient(to right, ${PROGRESS_COLOR} ${progressRef.current.value}%, #ccc ${progressRef.current.value}%)`;
       }
 
-      //If song is cached, play it
-      let audioData, songDataMap
-      if (cachedSongData.has(queue[indexToPlay!].id)) {
-        audioData = cachedSongData.get(queue[indexToPlay!].id)!
-        songDataMap = cachedSongData
-      } else {
-        setPlaybackState(PlaybackState.Loading)
-        try{
-          audioData = await stream(song, libraries.get(song.library_id)!, abortController.signal)
-        }catch(e: any) {
-          if(e.name !== "AbortError") {
-            console.log("Failed to stream song", e)
-            return
-          }
-        }
-        if(songLoadingId !== songLoadingRef.current) {
+      //Load current song (uses cache if already downloaded)
+      setPlaybackState(PlaybackState.Loading)
+      let audioData: string | undefined
+      try {
+        audioData = await stream(song, libraries.get(song.library_id)!)
+      } catch(e: any) {
+        if(e.name !== "AbortError") {
+          console.log("Failed to stream song", e)
           return
         }
-        if (audioData === undefined) {
-          console.log("Failed to stream song")
-          return
-        }
-        songDataMap = new Map<string, string>()
-        songDataMap.set(song.id, audioData)
+      }
+
+      if(songLoadingId !== songLoadingRef.current) {
+        return
+      }
+
+      if (audioData === undefined) {
+        console.log("Failed to stream song")
+        return
       }
 
       //Check if song load was cancelled
@@ -127,74 +120,44 @@ export default function NowPlaying({ libraries, onPlay, onAlbumClick }: NowPlayi
       //Scrobble song
       scrobble(song.id, libraries.get(song.library_id)!)
 
-      //Load nearby songs (if not present)
-      songDataMap = new Map<string, string>()
+      //Pre-load nearby songs in the background (for smooth playback)
+      preloadNearbySongs(indexToPlay, songLoadingId)
+    }
+  }
 
-      //Grab previous if possible
-      if (indexToPlay && indexToPlay !== 0) {
-        let previousTwo = indexToPlay - 2
-        if (previousTwo < 0) {
-          previousTwo = 0
+  async function preloadNearbySongs(indexToPlay: number, songLoadingId: number) {
+    //Grab previous songs if possible
+    if (indexToPlay > 0) {
+      let previousTwo = Math.max(0, indexToPlay - 2)
+      for (let i = previousTwo; i < indexToPlay; i++) {
+        //Check if song load was cancelled
+        if(songLoadingId !== songLoadingRef.current) {
+          return
         }
-        for (let i = previousTwo; i <= indexToPlay; i++) {
-          //Check if song load was cancelled
-          if(songLoadingId !== songLoadingRef.current) {
-            return
-          }
-          if (cachedSongData.has(queue[i].id)) {
-            continue
-          }
-          let song = queue[i]
-          let audioData = await stream(song, libraries.get(song.library_id)!, abortController.signal)
-          //Check if song load was cancelled
-          if(songLoadingId !== songLoadingRef.current) {
-            return
-          }
-
-          if (audioData === undefined) {
-            console.log("Failed to stream song")
-            return
-          }
-          songDataMap.set(song.id, audioData)
+        let song = queue[i]
+        try {
+          await stream(song, libraries.get(song.library_id)!)
+        } catch(e) {
+          console.log("Failed to preload song", e)
         }
       }
+    }
 
-      //Grab next if possible
-      if (indexToPlay && indexToPlay !== queue.length - 1) {
-        let nextTwo = indexToPlay + 2
-        if (nextTwo > queue.length - 1) {
-          nextTwo = queue.length - 1
+    //Grab next songs if possible
+    if (indexToPlay < queue.length - 1) {
+      let nextTwo = Math.min(queue.length - 1, indexToPlay + 2)
+      for (let i = indexToPlay + 1; i <= nextTwo; i++) {
+        //Check if song load was cancelled
+        if(songLoadingId !== songLoadingRef.current) {
+          return
         }
-        for (let i = indexToPlay + 1; i <= nextTwo; i++) {
-          //Check if song load was cancelled
-          if(songLoadingId !== songLoadingRef.current) {
-            return
-          }
-          if (cachedSongData.has(queue[i].id)) {
-            continue
-          }
-          let song = queue[i]
-          let audioData = await stream(song, libraries.get(song.library_id)!, abortController.signal)
-
-          //Check if song load was cancelled
-          if(songLoadingId !== songLoadingRef.current) {
-            return
-          }
-          if (audioData === undefined) {
-            console.log("Failed to stream song")
-            return
-          }
-          songDataMap.set(song.id, audioData)
+        let song = queue[i]
+        try {
+          await stream(song, libraries.get(song.library_id)!)
+        } catch(e) {
+          console.log("Failed to preload song", e)
         }
       }
-
-      //Check if song load was cancelled
-      if(songLoadingId !== songLoadingRef.current) {
-        return
-      }
-
-      //Save song data to state
-      setCachedSongData(songDataMap)
     }
   }
 

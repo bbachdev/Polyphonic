@@ -1,21 +1,38 @@
 import { Library } from "@/types/Config";
 import { Song } from "@/types/Music";
+import { invoke } from "@tauri-apps/api/core";
 
 export async function stream(
   song: Song,
-  library: Library,
-  abortSignal?: AbortSignal
+  library: Library
 ): Promise<string | undefined> {
-  let host = "";
-  let connectionString = "";
+  // Determine file extension from content type
+  let fileExtension = "mp3"; // default
+  if (song.content_type.includes("flac")) {
+    fileExtension = "flac";
+  } else if (song.content_type.includes("ogg")) {
+    fileExtension = "ogg";
+  } else if (song.content_type.includes("wav")) {
+    fileExtension = "wav";
+  } else if (song.content_type.includes("m4a") || song.content_type.includes("mp4")) {
+    fileExtension = "m4a";
+  }
 
-  host = library.host + (library.port !== -1 ? `:${library.port}` : "");
-  connectionString = `${host}/rest/stream.view?id=${song.id}&u=${library.username}&t=${library.hashed_password}&s=${library.salt}&v=1.16.1&c=tauri&f=json`;
+  try {
+    // Stream song to temp file
+    await invoke<string>("stream_song_to_file", {
+      library: library,
+      songId: song.id,
+      fileExtension: fileExtension,
+    });
 
-  const res = await fetch(connectionString, { signal: abortSignal });
-  const buffer = await res.arrayBuffer();
-
-  return URL.createObjectURL(new Blob([buffer], { type: song.content_type }));
+    // On Linux, use embedded HTTP server for webkit2gtk compatibility
+    // On other platforms, could use convertFileSrc but HTTP works everywhere
+    return `http://127.0.0.1:38291/temp_audio/${song.id}.${fileExtension}`;
+  } catch (error) {
+    console.error("Failed to stream song:", error);
+    return undefined;
+  }
 }
 
 export async function scrobble(

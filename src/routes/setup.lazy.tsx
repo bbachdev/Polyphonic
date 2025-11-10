@@ -20,7 +20,10 @@ function Setup() {
     console.log("Additional", additional)
     setConfig({ ...config, ...additional })
     console.log(config)
-    const store = await load('config.json', { autoSave: false });
+    const store = await load('config.json', {
+      autoSave: false,
+      defaults: {}
+    });
     await store.set('theme', { value: config.theme });
     await store.set('libraries', { value: config.libraries });
     await store.set('discord_rp', { value: additional.discord_rp });

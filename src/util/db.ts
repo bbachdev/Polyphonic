@@ -1,8 +1,35 @@
 import { Album, Artist, Playlist, Song, song_sort, Tag, AlbumTag } from "@/types/Music";
 import Database from "@tauri-apps/plugin-sql";
-import { appDataDir } from "@tauri-apps/api/path";
+import { appConfigDir } from "@tauri-apps/api/path";
+import { platform } from "@tauri-apps/plugin-os";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { Library } from '@/types/Config';
+
+// Helper function to get cover art URL - uses base64 on Linux for better webkit2gtk compatibility
+async function getCoverArtUrl(coverArtFilename: string): Promise<string> {
+  const currentPlatform = platform();
+
+  if (currentPlatform === "linux") {
+    try {
+      // On Linux, use base64 data URLs for better webkit2gtk compatibility
+      const base64Url = await invoke<string>("get_cover_art_base64", {
+        coverArtFilename: coverArtFilename,
+      });
+      return base64Url;
+    } catch (error) {
+      console.error("Failed to load cover art:", error);
+      // Fallback to regular method
+      const appConfigDirPath = await appConfigDir();
+      const filePath = `${appConfigDirPath}/cover_art/${coverArtFilename}`;
+      return convertFileSrc(filePath);
+    }
+  } else {
+    // On other platforms, use the standard convertFileSrc
+    const appConfigDirPath = await appConfigDir();
+    const filePath = `${appConfigDirPath}/cover_art/${coverArtFilename}`;
+    return convertFileSrc(filePath);
+  }
+}
 
 async function getDb() {
   const db = await Database.load("sqlite:music.db");
@@ -18,31 +45,25 @@ export async function getArtists() {
 }
 
 export async function getAlbumsForArtist(artistId: string) {
-  const appDataDirPath = await appDataDir();
   const db = await getDb();
   const albums = await db.select<Album[]>(
     "SELECT id, name, artist_id, artist_name, cover_art, year, duration FROM albums WHERE artist_id = ? ORDER BY year DESC",
     [artistId]
   );
   for (let i = 0; i < albums.length; i++) {
-    const filePath = `${appDataDirPath}/cover_art/${albums[i].cover_art}`;
-    const assetUrl = convertFileSrc(filePath);
-    albums[i].cover_art = assetUrl;
+    albums[i].cover_art = await getCoverArtUrl(albums[i].cover_art);
   }
   return albums;
 }
 
 export async function getSongsForAlbum(albumId: string) {
-  const appDataDirPath = await appDataDir();
   const db = await getDb();
   const songs = await db.select<Song[]>(
     "SELECT id, title, artist_id, artist_name, album_id, album_name, library_id, track, disc_number, duration, content_type, cover_art FROM songs WHERE album_id = ? ORDER BY track ASC",
     [albumId]
   );
   for (let i = 0; i < songs.length; i++) {
-    const filePath = `${appDataDirPath}/cover_art/${songs[i].cover_art}`;
-    const assetUrl = convertFileSrc(filePath);
-    songs[i].cover_art = assetUrl;
+    songs[i].cover_art = await getCoverArtUrl(songs[i].cover_art);
   }
 
   //Sort by disc number
@@ -52,7 +73,6 @@ export async function getSongsForAlbum(albumId: string) {
 }
 
 export async function getAlbumsById(albumIds: string[]) {
-  const appDataDirPath = await appDataDir();
   const db = await getDb();
   let albumIdsWithQuotes = albumIds.map((id) => `"${id}"`);
   let albumQuery =
@@ -61,9 +81,7 @@ export async function getAlbumsById(albumIds: string[]) {
     ")";
   const albums = await db.select<Album[]>(albumQuery);
   for (let i = 0; i < albums.length; i++) {
-    const filePath = `${appDataDirPath}/cover_art/${albums[i].cover_art}`;
-    const assetUrl = convertFileSrc(filePath);
-    albums[i].cover_art = assetUrl;
+    albums[i].cover_art = await getCoverArtUrl(albums[i].cover_art);
   }
 
   //Sort albums
@@ -96,22 +114,18 @@ export async function getTagsByAlbum(albumId: string) {
 }
 
 export async function getAlbumsByTag(tagId: string) {
-  const appDataDirPath = await appDataDir();
   const db = await getDb();
   const albums = await db.select<Album[]>(
     "SELECT id, name, artist_id, artist_name, cover_art, year, duration FROM albums WHERE id IN (SELECT album_id FROM album_tags WHERE tag_id = ?) ORDER BY name ASC",
     [tagId]
   );
   for (let i = 0; i < albums.length; i++) {
-    const filePath = `${appDataDirPath}/cover_art/${albums[i].cover_art}`;
-    const assetUrl = convertFileSrc(filePath);
-    albums[i].cover_art = assetUrl;
+    albums[i].cover_art = await getCoverArtUrl(albums[i].cover_art);
   }
   return albums;
 }
 
 export async function getSongsFromPlaylist(library: Library, playlist_id: string) {
-  const appDataDirPath = await appDataDir();
   //Invoke, then get song data from DB
   let song_ids = await invoke('get_songs_for_playlist', { library: library, playlistId: playlist_id }) as string[]
 
@@ -124,9 +138,7 @@ export async function getSongsFromPlaylist(library: Library, playlist_id: string
 
   const songs: Song[] = await db.select<Song[]>(songQuery, [playlist_id]);
   for (let i = 0; i < songs.length; i++) {
-    const filePath = `${appDataDirPath}/cover_art/${songs[i].cover_art}`;
-    const assetUrl = convertFileSrc(filePath);
-    songs[i].cover_art = assetUrl;
+    songs[i].cover_art = await getCoverArtUrl(songs[i].cover_art);
   }
 
   //Sort songs

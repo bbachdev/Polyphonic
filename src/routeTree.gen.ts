@@ -10,79 +10,33 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
 
-import { Route as rootRoute } from './routes/__root'
+const SetupLazyRouteImport = createFileRoute('/setup')()
+const InitialsyncLazyRouteImport = createFileRoute('/initialsync')()
+const CollectionLazyRouteImport = createFileRoute('/collection')()
+const IndexLazyRouteImport = createFileRoute('/')()
 
-// Create Virtual Routes
-
-const SetupLazyImport = createFileRoute('/setup')()
-const InitialsyncLazyImport = createFileRoute('/initialsync')()
-const CollectionLazyImport = createFileRoute('/collection')()
-const IndexLazyImport = createFileRoute('/')()
-
-// Create/Update Routes
-
-const SetupLazyRoute = SetupLazyImport.update({
+const SetupLazyRoute = SetupLazyRouteImport.update({
   id: '/setup',
   path: '/setup',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/setup.lazy').then((d) => d.Route))
-
-const InitialsyncLazyRoute = InitialsyncLazyImport.update({
+const InitialsyncLazyRoute = InitialsyncLazyRouteImport.update({
   id: '/initialsync',
   path: '/initialsync',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/initialsync.lazy').then((d) => d.Route))
-
-const CollectionLazyRoute = CollectionLazyImport.update({
+const CollectionLazyRoute = CollectionLazyRouteImport.update({
   id: '/collection',
   path: '/collection',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/collection.lazy').then((d) => d.Route))
-
-const IndexLazyRoute = IndexLazyImport.update({
+const IndexLazyRoute = IndexLazyRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
-
-// Populate the FileRoutesByPath interface
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/collection': {
-      id: '/collection'
-      path: '/collection'
-      fullPath: '/collection'
-      preLoaderRoute: typeof CollectionLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/initialsync': {
-      id: '/initialsync'
-      path: '/initialsync'
-      fullPath: '/initialsync'
-      preLoaderRoute: typeof InitialsyncLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/setup': {
-      id: '/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof SetupLazyImport
-      parentRoute: typeof rootRoute
-    }
-  }
-}
-
-// Create and export the route tree
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
@@ -90,22 +44,19 @@ export interface FileRoutesByFullPath {
   '/initialsync': typeof InitialsyncLazyRoute
   '/setup': typeof SetupLazyRoute
 }
-
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/collection': typeof CollectionLazyRoute
   '/initialsync': typeof InitialsyncLazyRoute
   '/setup': typeof SetupLazyRoute
 }
-
 export interface FileRoutesById {
-  __root__: typeof rootRoute
+  __root__: typeof rootRouteImport
   '/': typeof IndexLazyRoute
   '/collection': typeof CollectionLazyRoute
   '/initialsync': typeof InitialsyncLazyRoute
   '/setup': typeof SetupLazyRoute
 }
-
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/collection' | '/initialsync' | '/setup'
@@ -114,12 +65,44 @@ export interface FileRouteTypes {
   id: '__root__' | '/' | '/collection' | '/initialsync' | '/setup'
   fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   CollectionLazyRoute: typeof CollectionLazyRoute
   InitialsyncLazyRoute: typeof InitialsyncLazyRoute
   SetupLazyRoute: typeof SetupLazyRoute
+}
+
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/initialsync': {
+      id: '/initialsync'
+      path: '/initialsync'
+      fullPath: '/initialsync'
+      preLoaderRoute: typeof InitialsyncLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collection': {
+      id: '/collection'
+      path: '/collection'
+      fullPath: '/collection'
+      preLoaderRoute: typeof CollectionLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -128,35 +111,6 @@ const rootRouteChildren: RootRouteChildren = {
   InitialsyncLazyRoute: InitialsyncLazyRoute,
   SetupLazyRoute: SetupLazyRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/collection",
-        "/initialsync",
-        "/setup"
-      ]
-    },
-    "/": {
-      "filePath": "index.lazy.tsx"
-    },
-    "/collection": {
-      "filePath": "collection.lazy.tsx"
-    },
-    "/initialsync": {
-      "filePath": "initialsync.lazy.tsx"
-    },
-    "/setup": {
-      "filePath": "setup.lazy.tsx"
-    }
-  }
-}
-ROUTE_MANIFEST_END */

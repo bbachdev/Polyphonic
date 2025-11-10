@@ -13,7 +13,10 @@ function InitialSync() {
 
   useEffect(() => {
     async function sync() {
-      let store = await load('config.json', { autoSave: false });
+      let store = await load('config.json', {
+        autoSave: false,
+        defaults: {}
+      });
       const libraries: any = await store.get('libraries');
       await invoke('sync_collection', { libraries: libraries.value })
         .then(() => {
