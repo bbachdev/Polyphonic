@@ -15,7 +15,7 @@ use crate::{
         get_album_art, get_albums_for_artist, get_artists, get_playlists, get_songs_for_album,
     },
 };
-use futures::{future::join_all, StreamExt};
+use futures::StreamExt;
 use tauri::{AppHandle, Manager};
 
 pub async fn sync_library(library: &Library, app_handle: &AppHandle) -> Result<(), anyhow::Error> {
@@ -166,7 +166,8 @@ pub async fn get_albums(
             futures.push(get_albums_for_artist(url, client.clone()));
         }
     }
-    let album_calls = join_all(futures).await;
+    let stream = futures::stream::iter(futures).buffer_unordered(20);
+    let album_calls = stream.collect::<Vec<_>>().await;
     for album_call in album_calls {
         match album_call {
             Ok(album_response) => {
@@ -195,7 +196,8 @@ pub async fn get_songs(
         let url = format!("{}&id={}", base_url, album.id);
         futures.push(get_songs_for_album(url, client.clone()));
     }
-    let album_calls = join_all(futures).await;
+    let stream = futures::stream::iter(futures).buffer_unordered(20);
+    let album_calls = stream.collect::<Vec<_>>().await;
     for album_call in album_calls {
         match album_call {
             Ok(album_response) => {
