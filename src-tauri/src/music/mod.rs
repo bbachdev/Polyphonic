@@ -2,7 +2,8 @@ use std::{collections::HashMap, fs, path::Path};
 
 use crate::{
     db::{
-        db_connect, delete_unused_artists, insert_albums, insert_artists, insert_library, insert_playlists, insert_songs, update_last_scanned
+        db_connect, delete_unused_artists, insert_albums, insert_artists, insert_library,
+        insert_playlists, insert_songs, update_last_scanned,
     },
     formatter::create_connection_string,
     models::{Album, Artist, Library, Playlist, Song},
@@ -250,12 +251,15 @@ async fn get_cover_art(
         match result {
             Ok(file_name) => {
                 if !file_name.is_empty() {
-                    cover_art_map.insert(Path::new(&file_name)
-                    .with_extension("")
-                    .to_string_lossy()
-                    .to_string(), file_name);
+                    cover_art_map.insert(
+                        Path::new(&file_name)
+                            .with_extension("")
+                            .to_string_lossy()
+                            .to_string(),
+                        file_name,
+                    );
                 }
-            },
+            }
             Err(e) => println!("Error: {}", e),
         }
     }

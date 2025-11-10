@@ -1,4 +1,7 @@
-use std::{collections::HashMap, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    collections::HashMap,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Manager};
@@ -245,16 +248,24 @@ pub async fn get_libraries(app_handle: &AppHandle) -> Result<Vec<Library>, anyho
 }
 
 pub async fn delete_unused_artists(pool: &Pool<Sqlite>) -> Result<(), anyhow::Error> {
-    let query_object = sqlx::query("DELETE FROM artists WHERE id NOT IN (SELECT artist_id FROM albums)");
+    let query_object =
+        sqlx::query("DELETE FROM artists WHERE id NOT IN (SELECT artist_id FROM albums)");
     query_object.execute(pool).await?;
     Ok(())
 }
 
-pub async fn update_last_scanned(pool: &Pool<Sqlite>, library_id: &String) -> Result<(), anyhow::Error> {
+pub async fn update_last_scanned(
+    pool: &Pool<Sqlite>,
+    library_id: &String,
+) -> Result<(), anyhow::Error> {
     let query_object = sqlx::query("UPDATE libraries SET last_scanned = (?) WHERE id = (?)");
     let start = SystemTime::now();
     let since_the_epoch = start.duration_since(UNIX_EPOCH);
     let library_last_scanned = since_the_epoch.unwrap().as_millis().to_string();
-    query_object.bind(library_last_scanned).bind(library_id).execute(pool).await?;
+    query_object
+        .bind(library_last_scanned)
+        .bind(library_id)
+        .execute(pool)
+        .await?;
     Ok(())
 }

@@ -1,6 +1,6 @@
+use glob::glob;
 use std::fs::File;
 use std::io::{Cursor, Write};
-use glob::glob;
 
 use image::{ImageFormat, ImageReader};
 use reqwest::Client;
@@ -100,10 +100,8 @@ pub async fn get_album_art(
 ) -> Result<String, anyhow::Error> {
     for entry in glob(&format!("{}/cover_art/{}*", path, cover_id))? {
         match entry {
-            Ok(_) => {
-                return Ok("".to_string())
-            }
-            Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e))
+            Ok(_) => return Ok("".to_string()),
+            Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
         }
     }
 
@@ -164,8 +162,8 @@ pub async fn get_album_art(
                 return match file.write_all(&file_buffer) {
                     Ok(_) => Ok(format!("{}{}", cover_id, file_extension)),
                     Err(e) => Err(anyhow::anyhow!("Art Error: {}", e)),
-                }
-            },
+                };
+            }
             Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),
         },
         Err(e) => return Err(anyhow::anyhow!("Art Error: {}", e)),

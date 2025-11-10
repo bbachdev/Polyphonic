@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fs;
+use std::io::Write;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use tauri::{AppHandle, Manager};
@@ -172,4 +173,89 @@ pub async fn clear_cover_art_cache(app_handle: AppHandle) -> Result<bool, String
     let cover_art_path = format!("{}/cover_art", data_dir_string);
     fs::remove_dir_all(cover_art_path).unwrap();
     Ok(true)
+}
+
+#[tauri::command]
+pub async fn clear_audio_cache(app_handle: AppHandle) -> Result<bool, String> {
+    let binding = app_handle.path().app_config_dir().unwrap();
+    let app_config_dir = binding.to_str().unwrap();
+    let temp_audio_path = format!("{}/temp_audio", app_config_dir);
+
+    match fs::remove_dir_all(&temp_audio_path) {
+        Ok(_) => Ok(true),
+        Err(_) => {
+            // Directory might not exist, that's fine
+            Ok(true)
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn stream_song_to_file(
+    mut library: Library,
+    song_id: String,
+    file_extension: String,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    //Create temp directory if it doesn't exist
+    let binding = app_handle.path().app_config_dir().unwrap();
+    let app_config_dir = binding.to_str().unwrap();
+    let temp_dir = format!("{}/temp_audio", app_config_dir);
+    fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+
+    //Check if file already exists (caching)
+    let file_path = format!("{}/{}.{}", temp_dir, song_id, file_extension);
+    if fs::metadata(&file_path).is_ok() {
+        //File already exists, return the path without re-downloading
+        return Ok(file_path);
+    }
+
+    //Get library hash
+    let hashed_password = get_library_hash(&library).map_err(|e| e.to_string())?;
+    library.hashed_password = hashed_password;
+
+    //Stream song data
+    let song_data = stream(&library, &song_id)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    //Write to temp file
+    let mut file = fs::File::create(&file_path).map_err(|e| e.to_string())?;
+    file.write_all(&song_data).map_err(|e| e.to_string())?;
+
+    Ok(file_path)
+}
+
+#[tauri::command]
+pub async fn get_cover_art_base64(
+    cover_art_filename: String,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    use base64::{engine::general_purpose, Engine as _};
+
+    let binding = app_handle.path().app_config_dir().unwrap();
+    let app_config_dir = binding.to_str().unwrap();
+    let file_path = format!("{}/cover_art/{}", app_config_dir, cover_art_filename);
+
+    // Read the image file
+    let image_data = fs::read(&file_path).map_err(|e| format!("Failed to read file: {}", e))?;
+
+    // Determine MIME type from extension
+    let mime_type = if file_path.ends_with(".jpg") || file_path.ends_with(".jpeg") {
+        "image/jpeg"
+    } else if file_path.ends_with(".png") {
+        "image/png"
+    } else if file_path.ends_with(".gif") {
+        "image/gif"
+    } else if file_path.ends_with(".webp") {
+        "image/webp"
+    } else {
+        "image/jpeg" // default
+    };
+
+    // Encode to base64
+    let base64_data = general_purpose::STANDARD.encode(&image_data);
+
+    // Return as data URL
+    Ok(format!("data:{};base64,{}", mime_type, base64_data))
 }
