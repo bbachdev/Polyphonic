@@ -5,11 +5,72 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use tauri::{AppHandle, Manager};
 
+// Cache size threshold in bytes (2GB default)
+const AUDIO_CACHE_SIZE_THRESHOLD: u64 = 2 * 1024 * 1024 * 1024;
+
 use crate::db::db_connect;
 use crate::formatter::{generate_md5, generate_salt, get_library_hash, save_library_hash};
 use crate::models::{Library, LibraryConfig};
 use crate::music::sync_library;
 use crate::subsonic::{get_album_list, get_playlist_songs, ping_server, stream};
+
+/// Updates the access time of a file to current time
+fn touch_file(file_path: &str) -> Result<(), String> {
+    let now = filetime::FileTime::now();
+    filetime::set_file_atime(file_path, now).map_err(|e| e.to_string())
+}
+
+/// Cleans up the audio cache if it exceeds the size threshold
+/// Removes oldest accessed files first until below threshold
+fn cleanup_audio_cache_if_needed(temp_dir: &str) -> Result<(), String> {
+    // Calculate total directory size
+    let entries = fs::read_dir(temp_dir).map_err(|e| e.to_string())?;
+
+    let mut files: Vec<(String, u64, SystemTime)> = Vec::new();
+    let mut total_size: u64 = 0;
+
+    for entry in entries {
+        if let Ok(entry) = entry {
+            if let Ok(metadata) = entry.metadata() {
+                if metadata.is_file() {
+                    let size = metadata.len();
+                    let accessed = metadata.accessed().unwrap_or(SystemTime::UNIX_EPOCH);
+                    let path = entry.path().to_string_lossy().to_string();
+
+                    files.push((path, size, accessed));
+                    total_size += size;
+                }
+            }
+        }
+    }
+
+    // If we're under the threshold, no cleanup needed
+    if total_size <= AUDIO_CACHE_SIZE_THRESHOLD {
+        return Ok(());
+    }
+
+    // Sort by access time (oldest first)
+    files.sort_by_key(|f| f.2);
+
+    // Remove files until we're under the threshold
+    for (path, size, _) in files {
+        if total_size <= AUDIO_CACHE_SIZE_THRESHOLD {
+            break;
+        }
+
+        match fs::remove_file(&path) {
+            Ok(_) => {
+                total_size -= size;
+                println!("Removed cached audio file: {} (saved {} bytes)", path, size);
+            }
+            Err(e) => {
+                println!("Failed to remove {}: {}", path, e);
+            }
+        }
+    }
+
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn add_server(library: LibraryConfig) -> Result<Library, String> {
@@ -206,7 +267,8 @@ pub async fn stream_song_to_file(
     //Check if file already exists (caching)
     let file_path = format!("{}/{}.{}", temp_dir, song_id, file_extension);
     if fs::metadata(&file_path).is_ok() {
-        //File already exists, return the path without re-downloading
+        //File already exists, update its access time and return
+        let _ = touch_file(&file_path);
         return Ok(file_path);
     }
 
@@ -222,6 +284,9 @@ pub async fn stream_song_to_file(
     //Write to temp file
     let mut file = fs::File::create(&file_path).map_err(|e| e.to_string())?;
     file.write_all(&song_data).map_err(|e| e.to_string())?;
+
+    //Cleanup cache if needed (remove oldest files if over threshold)
+    let _ = cleanup_audio_cache_if_needed(&temp_dir);
 
     Ok(file_path)
 }
