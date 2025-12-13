@@ -109,13 +109,32 @@ export default function NowPlaying({ libraries, onPlay, onAlbumClick }: NowPlayi
       }
 
       audioRef.current.src = audioData
+
+      // Use event-based loading to avoid blocking UI thread
+      const handleCanPlay = async () => {
+        // Check if this load was cancelled
+        if(songLoadingId !== songLoadingRef.current) {
+          audioRef.current?.removeEventListener('canplay', handleCanPlay)
+          return
+        }
+
+        let secondsDate = new Date(0)
+        secondsDate.setSeconds(song.duration)
+        var timestring = secondsDate.toISOString().slice(11, 19).replace(/^0+:(0+)?/, '')
+        setDuration(timestring)
+
+        try {
+          await audioRef.current?.play()
+          setPlaybackState(PlaybackState.Playing)
+        } catch (e) {
+          console.log("Failed to play audio", e)
+        }
+
+        audioRef.current?.removeEventListener('canplay', handleCanPlay)
+      }
+
+      audioRef.current.addEventListener('canplay', handleCanPlay, { once: true })
       audioRef.current.load()
-      let secondsDate = new Date(0)
-      secondsDate.setSeconds(song.duration)
-      var timestring = secondsDate.toISOString().slice(11, 19).replace(/^0+:(0+)?/, '')
-      setDuration(timestring)
-      audioRef.current.play()
-      setPlaybackState(PlaybackState.Playing)
 
       //Scrobble song
       scrobble(song.id, libraries.get(song.library_id)!)
