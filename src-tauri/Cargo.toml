@@ -1,6 +1,6 @@
 [package]
 name = "polyphonic"
-version = "0.3.9"
+version = "0.4.0"
 description = "A desktop music player, built with Tauri"
 authors = ["you"]
 edition = "2021"
