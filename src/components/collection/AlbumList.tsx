@@ -141,8 +141,9 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
       });
     } catch (error) {
       console.error('Failed to create share:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Make sure the share service is running and API key is configured.';
       toast.error('Failed to create share link', {
-        description: 'Make sure the share service is running.',
+        description: errorMessage,
       });
     }
   }

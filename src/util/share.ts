@@ -21,6 +21,7 @@ interface ShareResponse {
 }
 
 const SHARE_API_URL = import.meta.env.VITE_SHARE_API_URL || 'http://localhost:7636';
+const SHARE_API_KEY = import.meta.env.VITE_SHARE_API_KEY;
 
 /**
  * Converts an image URL to a base64 data URI
@@ -54,6 +55,13 @@ async function imageUrlToBase64(imageUrl: string): Promise<string | undefined> {
 }
 
 export async function createShare(options: ShareOptions): Promise<ShareResponse> {
+  // Validate API key is configured
+  if (!SHARE_API_KEY) {
+    throw new Error(
+      'Share API key is not configured. Please set VITE_SHARE_API_KEY in your .env file.'
+    );
+  }
+
   let coverArtBase64: string | undefined;
 
   // Convert cover art URL to base64 if provided
@@ -65,6 +73,7 @@ export async function createShare(options: ShareOptions): Promise<ShareResponse>
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-API-Key': SHARE_API_KEY,
     },
     body: JSON.stringify({
       type: options.type,
@@ -77,7 +86,8 @@ export async function createShare(options: ShareOptions): Promise<ShareResponse>
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to create share: ${response.statusText}`);
+    const errorText = await response.text().catch(() => response.statusText);
+    throw new Error(`Failed to create share: ${errorText}`);
   }
 
   return await response.json();
