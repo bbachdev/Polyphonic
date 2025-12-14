@@ -2,12 +2,14 @@ import { Library } from '@/types/Config';
 import { Song } from '@/types/Music'
 import { scrobble, stream } from '@/util/subsonic';
 import { RefObject, useContext, useEffect, useRef, useState } from 'react';
-import { FaPlayCircle, FaPauseCircle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
+import { FaPlayCircle, FaPauseCircle, FaVolumeUp, FaVolumeMute, FaShareAlt } from "react-icons/fa";
 import { MdSkipNext, MdSkipPrevious } from "react-icons/md";
 import CoverArt from '@/components/collection/CoverArt';
 import Spinner from '@/components/ui/spinner';
 import QueueContext from '@/contexts/QueueContext';
 import QueueList from './QueueList';
+import { shareToClipboard } from '@/util/share';
+import { toast } from 'sonner';
 
 //Make default lower volume for better UX
 const DEFAULT_VOLUME = 65;
@@ -289,6 +291,27 @@ export default function NowPlaying({ libraries, onPlay, onAlbumClick }: NowPlayi
     loadSong(song, index)
   }
 
+  async function handleShare() {
+    if (!nowPlaying) return;
+
+    try {
+      const url = await shareToClipboard({
+        type: 'song',
+        title: nowPlaying.title,
+        artist: nowPlaying.artist_name,
+        album: nowPlaying.album_name,
+      });
+      toast.success('Copied to clipboard!', {
+        description: url,
+      });
+    } catch (error) {
+      console.error('Failed to create share:', error);
+      toast.error('Failed to create share link', {
+        description: 'Make sure the share service is running.',
+      });
+    }
+  }
+
   /* Queue-Related */
   //function queueItemClicked(index: number) {
     //Find song in queue
@@ -352,6 +375,9 @@ export default function NowPlaying({ libraries, onPlay, onAlbumClick }: NowPlayi
               )}
               <button onClick={nextSong} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700`}>
                 <MdSkipNext className={`h-10 w-10`} />
+              </button>
+              <button onClick={handleShare} className={`rounded-full bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 p-2`} title="Share">
+                <FaShareAlt className={`h-6 w-6`} />
               </button>
             </div>
 

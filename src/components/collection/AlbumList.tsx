@@ -1,4 +1,4 @@
-import { FaTag, FaPlay } from "react-icons/fa";
+import { FaTag, FaPlay, FaShareAlt } from "react-icons/fa";
 import { MdQueue } from "react-icons/md";
 import { Album } from '@/types/Music'
 import { useState, MouseEvent, useEffect, useRef } from 'react'
@@ -12,6 +12,8 @@ import { useRecentAlbums } from '@/hooks/query/useRecentAlbums';
 import { useAddedAlbums } from '@/hooks/query/useAddedAlbums';
 import Spinner from '@/components/ui/spinner';
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { shareToClipboard } from '@/util/share';
+import { toast } from 'sonner';
 
 interface AlbumListProps {
   parentAlbums: Album[],
@@ -120,6 +122,28 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
   //TODO: Add to queue
   function addToQueueContext(albumId: string) {
     console.log("Adding to queue context: " + albumId)
+  }
+
+  async function shareAlbumContext(albumId: string) {
+    const album = albums.find(a => a.id === albumId);
+    if (!album) return;
+
+    try {
+      const url = await shareToClipboard({
+        type: 'album',
+        title: album.name,
+        artist: album.artist_name,
+        year: album.year !== 9999 ? album.year : undefined,
+      });
+      toast.success('Copied to clipboard!', {
+        description: url,
+      });
+    } catch (error) {
+      console.error('Failed to create share:', error);
+      toast.error('Failed to create share link', {
+        description: 'Make sure the share service is running.',
+      });
+    }
   }
 
   function toggleSortDirection() {
@@ -316,6 +340,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
                 <ContextMenuContent>
                   <ContextMenuItem className={`flex gap-2 items-center`} onClick={() => playAlbumContext(album.id)}><FaPlay/>Play Album</ContextMenuItem>
                   <ContextMenuItem className={`flex gap-2 items-center`} onClick={() => addToQueueContext(album.id)}><MdQueue/>Add to Queue</ContextMenuItem>
+                  <ContextMenuItem className={`flex gap-2 items-center`} onClick={() => shareAlbumContext(album.id)}><FaShareAlt/>Share Album</ContextMenuItem>
                   <DialogTrigger asChild>
                     <ContextMenuItem className={`flex gap-2 items-center`} onClick={() => openTagDialog(album.id)}><FaTag/> Set Tags</ContextMenuItem>
                   </DialogTrigger>

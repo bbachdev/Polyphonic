@@ -1,5 +1,5 @@
-use tauri_plugin_sql::{Migration, MigrationKind};
 use tauri::Manager;
+use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod commands;
 mod db;
@@ -12,11 +12,11 @@ mod subsonic;
 // HTTP server for serving audio files on Linux
 #[cfg(target_os = "linux")]
 mod audio_server {
-    use std::sync::{Arc, Mutex};
-    use std::path::PathBuf;
     use std::fs::File;
     use std::io::{Read, Seek, SeekFrom};
-    use tiny_http::{Server, Response, Header};
+    use std::path::PathBuf;
+    use std::sync::{Arc, Mutex};
+    use tiny_http::{Header, Response, Server};
 
     lazy_static::lazy_static! {
         static ref AUDIO_DIR: Arc<Mutex<Option<PathBuf>>> = Arc::new(Mutex::new(None));
@@ -43,7 +43,9 @@ mod audio_server {
                             let file_size = file.metadata().map(|m| m.len()).unwrap_or(0);
 
                             // Check for Range header
-                            let range_header = request.headers().iter()
+                            let range_header = request
+                                .headers()
+                                .iter()
                                 .find(|h| h.field.equiv("Range"))
                                 .map(|h| h.value.as_str());
 
@@ -81,10 +83,32 @@ mod audio_server {
 
                                 let response = Response::from_data(buffer)
                                     .with_status_code(206)
-                                    .with_header(Header::from_bytes(&b"Content-Type"[..], content_type.as_bytes()).unwrap())
-                                    .with_header(Header::from_bytes(&b"Accept-Ranges"[..], &b"bytes"[..]).unwrap())
-                                    .with_header(Header::from_bytes(&b"Content-Range"[..], format!("bytes {}-{}/{}", start, end, file_size).as_bytes()).unwrap())
-                                    .with_header(Header::from_bytes(&b"Access-Control-Allow-Origin"[..], &b"*"[..]).unwrap());
+                                    .with_header(
+                                        Header::from_bytes(
+                                            &b"Content-Type"[..],
+                                            content_type.as_bytes(),
+                                        )
+                                        .unwrap(),
+                                    )
+                                    .with_header(
+                                        Header::from_bytes(&b"Accept-Ranges"[..], &b"bytes"[..])
+                                            .unwrap(),
+                                    )
+                                    .with_header(
+                                        Header::from_bytes(
+                                            &b"Content-Range"[..],
+                                            format!("bytes {}-{}/{}", start, end, file_size)
+                                                .as_bytes(),
+                                        )
+                                        .unwrap(),
+                                    )
+                                    .with_header(
+                                        Header::from_bytes(
+                                            &b"Access-Control-Allow-Origin"[..],
+                                            &b"*"[..],
+                                        )
+                                        .unwrap(),
+                                    );
 
                                 request.respond(response).ok();
                             } else {
@@ -107,19 +131,40 @@ mod audio_server {
                                 };
 
                                 let response = Response::from_data(buffer)
-                                    .with_header(Header::from_bytes(&b"Content-Type"[..], content_type.as_bytes()).unwrap())
-                                    .with_header(Header::from_bytes(&b"Accept-Ranges"[..], &b"bytes"[..]).unwrap())
-                                    .with_header(Header::from_bytes(&b"Access-Control-Allow-Origin"[..], &b"*"[..]).unwrap());
+                                    .with_header(
+                                        Header::from_bytes(
+                                            &b"Content-Type"[..],
+                                            content_type.as_bytes(),
+                                        )
+                                        .unwrap(),
+                                    )
+                                    .with_header(
+                                        Header::from_bytes(&b"Accept-Ranges"[..], &b"bytes"[..])
+                                            .unwrap(),
+                                    )
+                                    .with_header(
+                                        Header::from_bytes(
+                                            &b"Access-Control-Allow-Origin"[..],
+                                            &b"*"[..],
+                                        )
+                                        .unwrap(),
+                                    );
 
                                 request.respond(response).ok();
                             }
                         }
                         Err(_) => {
-                            request.respond(Response::from_string("Not Found").with_status_code(404)).ok();
+                            request
+                                .respond(Response::from_string("Not Found").with_status_code(404))
+                                .ok();
                         }
                     }
                 } else {
-                    request.respond(Response::from_string("Server not initialized").with_status_code(500)).ok();
+                    request
+                        .respond(
+                            Response::from_string("Server not initialized").with_status_code(500),
+                        )
+                        .ok();
                 }
             }
         });
@@ -174,6 +219,7 @@ pub fn run() {
     }
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_sql::Builder::new().build())

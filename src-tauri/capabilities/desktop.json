@@ -25,6 +25,7 @@
     "store:allow-length",
     "store:allow-reset",
     "sql:default",
-    "sql:allow-execute"
+    "sql:allow-execute",
+    "clipboard-manager:allow-write-text"
   ]
 }

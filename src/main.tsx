@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ThemeProvider } from "./providers/ThemeProvider";
+import { Toaster } from 'sonner';
 import "./App.css";
 
 // Import the generated route tree
@@ -19,6 +20,7 @@ declare module '@tanstack/react-router' {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   // <React.StrictMode>
   <ThemeProvider defaultTheme="dark" storageKey="app-theme">
+    <Toaster position="bottom-right" />
     <RouterProvider router={router} />
   </ThemeProvider>
   // </React.StrictMode>,

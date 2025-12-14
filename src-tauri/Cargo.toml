@@ -39,6 +39,7 @@ tauri-plugin-os = "2"
 tiny_http = "0.12"
 lazy_static = "1.4"
 filetime = "0.2"
+tauri-plugin-clipboard-manager = "2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-window-state = "2"
