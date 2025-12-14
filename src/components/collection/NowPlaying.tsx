@@ -300,6 +300,7 @@ export default function NowPlaying({ libraries, onPlay, onAlbumClick }: NowPlayi
         title: nowPlaying.title,
         artist: nowPlaying.artist_name,
         album: nowPlaying.album_name,
+        coverArtUrl: nowPlaying.cover_art,
       });
       toast.success('Copied to clipboard!', {
         description: url,

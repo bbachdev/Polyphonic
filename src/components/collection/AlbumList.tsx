@@ -134,6 +134,7 @@ export default function AlbumList({ parentAlbums, libraries, onAlbumsSelected, v
         title: album.name,
         artist: album.artist_name,
         year: album.year !== 9999 ? album.year : undefined,
+        coverArtUrl: album.cover_art,
       });
       toast.success('Copied to clipboard!', {
         description: url,
