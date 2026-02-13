@@ -1,5 +1,5 @@
 import { Playlist, ListView } from '@/types/Music'
-import { MouseEvent, useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { usePlaylists } from '@/hooks/query/usePlaylists'
 import ViewSwitcher from './ViewSwitcher'
@@ -12,27 +12,23 @@ interface PlaylistListProps {
 
 export default function PlaylistList( {onPlaylistSelected, onViewChange, currentView}: PlaylistListProps) {
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | undefined>(undefined)
+  const hasInitiallySelected = useRef(false)
 
   const { data: playlists, isSuccess: isPlaylistsSuccess } = usePlaylists()
 
   useEffect(() => {
-    if (isPlaylistsSuccess && playlists.length > 0) {
+    if (isPlaylistsSuccess && playlists.length > 0 && !hasInitiallySelected.current) {
+      hasInitiallySelected.current = true
       setSelectedPlaylist(playlists[0])
       onPlaylistSelected(playlists[0])
     }
   }, [isPlaylistsSuccess, playlists, onPlaylistSelected])
 
-  function selectPlaylist(e: MouseEvent, playlist: Playlist) {
-    //Ctrl + click
-    if (e.ctrlKey) {
-      setSelectedPlaylist(undefined)
-    } else {
-      //Regular click
+  function selectPlaylist(playlist: Playlist) {
       if (selectedPlaylist?.id !== playlist.id && isPlaylistsSuccess) {
         setSelectedPlaylist(playlists.find(a => a.id === playlist.id))
         onPlaylistSelected(playlist)
       }
-    }
   }
 
   return (
@@ -45,7 +41,7 @@ export default function PlaylistList( {onPlaylistSelected, onViewChange, current
       <ScrollArea className={`w-full`}>
         <ul>
           {isPlaylistsSuccess && playlists.map((playlist, index) => (
-            <li className={`p-2 cursor-pointer ${(playlist.id === selectedPlaylist?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={(e) => selectPlaylist(e, playlist)}>{playlist.name}</li>
+            <li className={`p-2 cursor-pointer ${(playlist.id === selectedPlaylist?.id) ? 'bg-slate-700' : 'dark:hover:bg-slate-700'}`} key={index} onClick={() => selectPlaylist(playlist)}>{playlist.name}</li>
           ))}
         </ul>
 
